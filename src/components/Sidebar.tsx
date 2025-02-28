@@ -34,9 +34,7 @@ async function Sidebar() {
               </div>
             </Link>
 
-            {user.bio && (
-              <p className="mt-3 text-sm text-muted-foreground">{user.bio}</p>
-            )}
+            {user.bio && <p className="mt-3 text-sm text-muted-foreground">{user.bio}</p>}
 
             <div className="w-full">
               <Separator className="my-4" />
@@ -62,11 +60,7 @@ async function Sidebar() {
               <div className="flex items-center text-muted-foreground">
                 <LinkIcon className="w-4 h-4 mr-2 shrink-0" />
                 {user.website ? (
-                  <a
-                    href={`${user.website}`}
-                    className="hover:underline truncate"
-                    target="_blank"
-                  >
+                  <a href={`${user.website}`} className="hover:underline truncate" target="_blank">
                     {user.website}
                   </a>
                 ) : (
@@ -87,9 +81,7 @@ const UnAuthenticatedSidebar = () => (
   <div className="sticky top-20">
     <Card>
       <CardHeader>
-        <CardTitle className="text-center text-xl font-semibold">
-          Welcome Back!
-        </CardTitle>
+        <CardTitle className="text-center text-xl font-semibold">Welcome Back!</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-center text-muted-foreground mb-4">
