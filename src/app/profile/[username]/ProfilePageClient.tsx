@@ -3,7 +3,7 @@
 import { getProfileByUsername, getUserPosts, updateProfile } from "@/actions/profile.action";
 import { toggleFollow } from "@/actions/user.action";
 import PostCard from "@/components/PostCard";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, UserAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -99,9 +99,10 @@ function ProfilePageClient({
           <Card className="bg-card">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
-                <Avatar className="w-24 h-24">
-                  <AvatarImage src={user.image ?? "/avatar.png"} />
-                </Avatar>
+                {/* <Avatar className="w-24 h-24">
+                  <AvatarImage src={<UserAvatar />} />
+                </Avatar> */}
+                <UserAvatar className="w-24 h-24"/>
                 <h1 className="mt-4 text-2xl font-bold">{user.name ?? user.username}</h1>
                 <p className="text-muted-foreground">@{user.username}</p>
                 <p className="mt-2 text-sm">{user.bio}</p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Textarea } from "./ui/textarea";
@@ -18,6 +18,35 @@ function CreatePost() {
   const [isPosting, setIsPosting] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
 
+  const generateCaption = async () => {
+    if (!imageUrl) return;
+
+    try {
+      const res = await fetch("/api/generateCaption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+
+      const data = await res.json();
+      if (data.caption) {
+        setContent(data.caption);
+        toast.success("Caption generated!");
+      } else {
+        toast.error("Failed to generate caption.");
+      }
+    } catch (error) {
+      console.error("Caption generation error:", error);
+      toast.error("Error generating caption.");
+    }
+  };
+
+  useEffect(() => {
+    if (imageUrl) {
+      generateCaption();
+    }
+  }, [imageUrl]);
+
   const handleSubmit = async () => {
     if (!content.trim() && !imageUrl) return;
 
@@ -25,11 +54,9 @@ function CreatePost() {
     try {
       const result = await createPost(content, imageUrl);
       if (result?.success) {
-        // reset the form
         setContent("");
         setImageUrl("");
         setShowImageUpload(false);
-
         toast.success("Post created successfully");
       }
     } catch (error) {

@@ -4,7 +4,7 @@ import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import { getUserByClerkId } from "@/actions/user.action";
 import Link from "next/link";
-import { Avatar, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarImage, UserAvatar } from "./ui/avatar";
 import { Separator } from "./ui/separator";
 import { LinkIcon, MapPinIcon } from "lucide-react";
 
@@ -22,8 +22,7 @@ async function Sidebar() {
           <div className="flex flex-col items-center text-center">
             <Link
               href={`/profile/${user.username}`}
-              className="flex flex-col items-center justify-center"
-            >
+              className="flex flex-col items-center justify-center">
               <Avatar className="w-20 h-20 border-2 ">
                 <AvatarImage src={user.image || "/avatar.png"} />
               </Avatar>
