@@ -5,6 +5,7 @@ import {
   HomeIcon,
   LogOutIcon,
   MenuIcon,
+  MessageCircleIcon,
   MoonIcon,
   SunIcon,
   UserIcon,
@@ -12,17 +13,24 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
-import { useAuth, SignInButton, SignOutButton } from "@clerk/nextjs";
+import { useAuth, useUser, SignInButton, SignOutButton } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 
 function MobileNavbar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const { theme, setTheme } = useTheme();
+
+  // Generate dynamic profile link
+  const profileUrl = user
+    ? `/profile/${user.username ?? user.primaryEmailAddress?.emailAddress.split("@")[0]}`
+    : "/profile";
 
   return (
     <div className="flex md:hidden items-center space-x-2">
+      {/* Theme Toggle */}
       <Button
         variant="ghost"
         size="icon"
@@ -34,6 +42,7 @@ function MobileNavbar() {
         <span className="sr-only">Toggle theme</span>
       </Button>
 
+      {/* Mobile Menu */}
       <Sheet open={showMobileMenu} onOpenChange={setShowMobileMenu}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon">
@@ -45,6 +54,7 @@ function MobileNavbar() {
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col space-y-4 mt-6">
+            {/* Home Button */}
             <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
               <Link href="/">
                 <HomeIcon className="w-4 h-4" />
@@ -54,18 +64,31 @@ function MobileNavbar() {
 
             {isSignedIn ? (
               <>
+                {/* Message Button */}
+                <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
+                  <Link href="/message">
+                    <MessageCircleIcon className="w-4 h-4" />
+                    Message
+                  </Link>
+                </Button>
+
+                {/* Notifications Button */}
                 <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
                   <Link href="/notifications">
                     <BellIcon className="w-4 h-4" />
                     Notifications
                   </Link>
                 </Button>
+
+                {/* Profile Button */}
                 <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
-                  <Link href="/profile">
+                  <Link href={profileUrl}>
                     <UserIcon className="w-4 h-4" />
                     Profile
                   </Link>
                 </Button>
+
+                {/* Logout Button */}
                 <SignOutButton>
                   <Button variant="ghost" className="flex items-center gap-3 justify-start w-full">
                     <LogOutIcon className="w-4 h-4" />
@@ -74,8 +97,9 @@ function MobileNavbar() {
                 </SignOutButton>
               </>
             ) : (
+              // Sign In Button (if not signed in)
               <SignInButton mode="modal">
-                <Button variant="default" className="w-full">
+                <Button variant="default" className="w-full"  onClick={() => setShowMobileMenu(false)}>
                   Sign In
                 </Button>
               </SignInButton>
