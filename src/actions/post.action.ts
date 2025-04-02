@@ -4,18 +4,24 @@ import prisma from "@/lib/prisma";
 import { getDbUserId } from "./user.action";
 import { revalidatePath } from "next/cache";
 
-export async function createPost(content: string, image: string) {
+export async function createPost(content: string, image: string, video: string) {
   try {
     const userId = await getDbUserId();
 
     if (!userId) return;
 
+    const postData: any = {
+      content,
+      image,
+      authorId: userId,
+    };
+
+    if (video) {
+      postData.video = video;
+    }
+
     const post = await prisma.post.create({
-      data: {
-        content,
-        image,
-        authorId: userId,
-      },
+      data: postData,
     });
 
     revalidatePath("/"); // purge the cache for the home page
@@ -28,52 +34,202 @@ export async function createPost(content: string, image: string) {
 
 export async function getPosts() {
   try {
-    const posts = await prisma.post.findMany({
-      orderBy: {
-        createdAt: "desc",
+    const dbUserId = await getDbUserId();
+    if (!dbUserId) throw new Error("User not found");
+
+    // Get mutual followers
+    const mutualFollowers = await prisma.user.findMany({
+      where: {
+        followers: {
+          some: {
+            followerId: dbUserId
+          }
+        },
+        following: {
+          some: {
+            followingId: dbUserId
+          }
+        }
+      },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        image: true,
+        followers: {
+          select: {
+            followerId: true
+          }
+        },
+        following: {
+          select: {
+            followingId: true
+          }
+        }
+      }
+    });
+
+    // Get user's own posts
+    const ownPosts = await prisma.post.findMany({
+      where: {
+        authorId: dbUserId
       },
       include: {
         author: {
           select: {
             id: true,
+            username: true,
             name: true,
             image: true,
-            username: true,
-          },
+            followers: {
+              select: {
+                followerId: true
+              }
+            },
+            following: {
+              select: {
+                followingId: true
+              }
+            }
+          }
         },
         comments: {
-          include: {
+          select: {
+            id: true,
+            content: true,
             author: {
               select: {
                 id: true,
                 username: true,
-                image: true,
                 name: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: "asc",
-          },
+                image: true
+              }
+            }
+          }
         },
         likes: {
           select: {
-            userId: true,
-          },
-        },
-        _count: {
-          select: {
-            likes: true,
-            comments: true,
-          },
-        },
+            userId: true
+          }
+        }
       },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
 
-    return posts;
+    // Get posts from mutual followers
+    const mutualPosts = await prisma.post.findMany({
+      where: {
+        authorId: {
+          in: mutualFollowers.map(user => user.id)
+        }
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            image: true,
+            followers: {
+              select: {
+                followerId: true
+              }
+            },
+            following: {
+              select: {
+                followingId: true
+              }
+            }
+          }
+        },
+        comments: {
+          select: {
+            id: true,
+            content: true,
+            author: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                image: true
+              }
+            }
+          }
+        },
+        likes: {
+          select: {
+            userId: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 10 // Get at least 10 posts from mutual followers
+    });
+
+    // Get random posts from other users
+    const randomPosts = await prisma.post.findMany({
+      where: {
+        authorId: {
+          notIn: [...mutualFollowers.map(user => user.id), dbUserId]
+        }
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            image: true,
+            followers: {
+              select: {
+                followerId: true
+              }
+            },
+            following: {
+              select: {
+                followingId: true
+              }
+            }
+          }
+        },
+        comments: {
+          select: {
+            id: true,
+            content: true,
+            author: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                image: true
+              }
+            }
+          }
+        },
+        likes: {
+          select: {
+            userId: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 10 // Get 10 random posts
+    });
+
+    // Combine and shuffle posts
+    const allPosts = [...ownPosts, ...mutualPosts, ...randomPosts];
+    const shuffledPosts = allPosts.sort(() => Math.random() - 0.5);
+
+    return shuffledPosts;
   } catch (error) {
-    console.log("Error in getPosts", error);
-    throw new Error("Failed to fetch posts");
+    console.error("Error fetching posts:", error);
+    return [];
   }
 }
 
@@ -213,3 +369,6 @@ export async function deletePost(postId: string) {
     return { success: false, error: "Failed to delete post" };
   }
 }
+
+
+

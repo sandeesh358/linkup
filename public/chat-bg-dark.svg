@@ -1,0 +1,17 @@
+<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="chatPattern" patternUnits="userSpaceOnUse" width="100" height="100">
+      <rect width="100" height="100" fill="#111827" />
+      <circle cx="10" cy="10" r="1.5" fill="#1f2937" />
+      <circle cx="40" cy="40" r="1.5" fill="#1f2937" />
+      <circle cx="70" cy="70" r="1.5" fill="#1f2937" />
+      <circle cx="10" cy="70" r="1.5" fill="#1f2937" />
+      <circle cx="70" cy="10" r="1.5" fill="#1f2937" />
+      <circle cx="40" cy="10" r="1.5" fill="#1f2937" />
+      <circle cx="70" cy="40" r="1.5" fill="#1f2937" />
+      <circle cx="10" cy="40" r="1.5" fill="#1f2937" />
+      <circle cx="40" cy="70" r="1.5" fill="#1f2937" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#chatPattern)" />
+</svg> 

@@ -17,20 +17,41 @@ export async function generateMetadata({ params }: { params: { username: string 
   };
 }
 
+// Define a basic User type for type safety
+interface ProfileUser {
+  id: string;
+  name: string | null;
+  username: string;
+  bio: string | null;
+  image: string | null;
+  coverImage: string | null;
+  location: string | null;
+  website: string | null;
+  createdAt: Date;
+  _count: {
+    followers: number;
+    following: number;
+    posts: number;
+  };
+}
+
 async function ProfilePageServer({ params }: { params: { username: string } }) {
   const user = await getProfileByUsername(params.username);
 
   if (!user) notFound();
+  
+  // Cast the user with a more specific type
+  const typedUser = user as unknown as ProfileUser;
 
   const [posts, likedPosts, isCurrentUserFollowing] = await Promise.all([
-    getUserPosts(user.id),
-    getUserLikedPosts(user.id),
-    isFollowing(user.id),
+    getUserPosts(typedUser.id),
+    getUserLikedPosts(typedUser.id),
+    isFollowing(typedUser.id),
   ]);
 
   return (
     <ProfilePageClient
-      user={user}
+      user={typedUser}
       posts={posts}
       likedPosts={likedPosts}
       isFollowing={isCurrentUserFollowing}

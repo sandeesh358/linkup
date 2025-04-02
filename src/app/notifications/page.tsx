@@ -2,7 +2,7 @@
 
 import { getNotifications, markNotificationsAsRead } from "@/actions/notification.action";
 import { NotificationsSkeleton } from "@/components/NotificationSkeleton";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
@@ -11,8 +11,36 @@ import { HeartIcon, MessageCircleIcon, UserPlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-type Notifications = Awaited<ReturnType<typeof getNotifications>>;
-type Notification = Notifications[number];
+// Create specific types to handle notification data
+interface Creator {
+  id: string;
+  name: string | null;
+  username: string;
+  image: string | null;
+  coverImage?: string | null;
+}
+
+interface Post {
+  id: string;
+  content: string | null;
+  image: string | null;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  createdAt: Date;
+}
+
+interface Notification {
+  id: string;
+  type: "LIKE" | "COMMENT" | "FOLLOW";
+  read: boolean;
+  creator: Creator;
+  post?: Post | null;
+  comment?: Comment | null;
+  createdAt: Date;
+}
 
 const getNotificationIcon = (type: string) => {
   switch (type) {
@@ -36,7 +64,7 @@ function NotificationsPage() {
       setIsLoading(true);
       try {
         const data = await getNotifications();
-        setNotifications(data);
+        setNotifications(data as unknown as Notification[]);
 
         const unreadIds = data.filter((n) => !n.read).map((n) => n.id);
         if (unreadIds.length > 0) await markNotificationsAsRead(unreadIds);
@@ -77,6 +105,9 @@ function NotificationsPage() {
                 >
                   <Avatar className="mt-1">
                     <AvatarImage src={notification.creator.image ?? "/avatar.png"} />
+                    <AvatarFallback>
+                      {notification.creator.name?.[0] || notification.creator.username?.[0] || "U"}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">

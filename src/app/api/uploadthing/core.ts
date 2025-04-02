@@ -27,6 +27,48 @@ export const ourFileRouter = {
         throw error;
       }
     }),
+    
+  // Add video upload route
+  postVideo: f({
+    video: {
+      maxFileSize: "32MB",
+      maxFileCount: 1,
+    },
+  })
+    .middleware(async () => {
+      const { userId } = await auth();
+      if (!userId) throw new Error("Unauthorized");
+      return { userId };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      try {
+        return { fileUrl: file.url };
+      } catch (error) {
+        console.error("Error in onUploadComplete:", error);
+        throw error;
+      }
+    }),
+    
+  // Add profile image upload route
+  profileImage: f({
+    image: {
+      maxFileSize: "4MB",
+      maxFileCount: 1,
+    },
+  })
+    .middleware(async () => {
+      const { userId } = await auth();
+      if (!userId) throw new Error("Unauthorized");
+      return { userId };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      try {
+        return { fileUrl: file.url };
+      } catch (error) {
+        console.error("Error in onUploadComplete:", error);
+        throw error;
+      }
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

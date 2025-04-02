@@ -19,7 +19,8 @@ export async function getNotifications() {
             name: true,
             username: true,
             image: true,
-          },
+            coverImage: true,
+          } as any,
         },
         post: {
           select: {

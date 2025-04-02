@@ -15,6 +15,7 @@ export async function getProfileByUsername(username: string) {
         username: true,
         bio: true,
         image: true,
+        coverImage: true,
         location: true,
         website: true,
         createdAt: true,
@@ -25,7 +26,7 @@ export async function getProfileByUsername(username: string) {
             posts: true,
           },
         },
-      },
+      } as any,
     });
 
     return user;
@@ -48,7 +49,8 @@ export async function getUserPosts(userId: string) {
             name: true,
             username: true,
             image: true,
-          },
+            coverImage: true,
+          } as any,
         },
         comments: {
           include: {
@@ -58,7 +60,8 @@ export async function getUserPosts(userId: string) {
                 name: true,
                 username: true,
                 image: true,
-              },
+                coverImage: true,
+              } as any,
             },
           },
           orderBy: {
@@ -106,7 +109,8 @@ export async function getUserLikedPosts(userId: string) {
             name: true,
             username: true,
             image: true,
-          },
+            coverImage: true,
+          } as any,
         },
         comments: {
           include: {
@@ -116,7 +120,8 @@ export async function getUserLikedPosts(userId: string) {
                 name: true,
                 username: true,
                 image: true,
-              },
+                coverImage: true,
+              } as any,
             },
           },
           orderBy: {
@@ -156,18 +161,33 @@ export async function updateProfile(formData: FormData) {
     const bio = formData.get("bio") as string;
     const location = formData.get("location") as string;
     const website = formData.get("website") as string;
+    const image = formData.get("image") as string;
+    const coverImage = formData.get("coverImage") as string;
+
+    // Create a properly typed update object
+    const updateData: Record<string, string | null> = {
+      name: name || null,
+      bio: bio || null,
+      location: location || null,
+      website: website || null,
+    };
+    
+    // Only add image fields if they exist
+    if (image) updateData.image = image;
+    if (coverImage) updateData.coverImage = coverImage;
 
     const user = await prisma.user.update({
       where: { clerkId },
-      data: {
-        name,
-        bio,
-        location,
-        website,
-      },
+      data: updateData as any, // Cast to any for TypeScript
     });
 
+    // Revalidate all necessary paths
     revalidatePath("/profile");
+    revalidatePath("/");
+    revalidatePath("/search");
+    revalidatePath("/message");
+    revalidatePath("/notifications");
+    
     return { success: true, user };
   } catch (error) {
     console.error("Error updating profile:", error);

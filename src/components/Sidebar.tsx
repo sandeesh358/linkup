@@ -1,102 +1,258 @@
-import { currentUser } from "@clerk/nextjs/server";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
+"use client";
+
+import { useUser } from "@clerk/nextjs";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { getUserByClerkId } from "@/actions/user.action";
 import Link from "next/link";
-import { Avatar, AvatarImage, UserAvatar } from "./ui/avatar";
-import { Separator } from "./ui/separator";
-import { LinkIcon, MapPinIcon } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import FollowModal from "./FollowModal";
+import { getFollowers, getFollowing, getUserByClerkId } from "@/actions/user.action";
+import type { User } from "@/lib/types";
+import { CalendarDays, Link as LinkIcon, MapPin, HelpCircle, Mail } from "lucide-react";
+import { Skeleton } from "./ui/skeleton";
+import { Card } from "./ui/card";
 
-async function Sidebar() {
-  const authUser = await currentUser();
-  if (!authUser) return <UnAuthenticatedSidebar />;
+export default function Sidebar() {
+  const { user: clerkUser } = useUser();
+  const [dbUser, setDbUser] = useState<any>(null);
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
+  const [followers, setFollowers] = useState<User[]>([]);
+  const [following, setFollowing] = useState<User[]>([]);
+  const [isLoadingFollowers, setIsLoadingFollowers] = useState(false);
+  const [isLoadingFollowing, setIsLoadingFollowing] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const user = await getUserByClerkId(authUser.id);
-  if (!user) return null;
+  const fetchDbUser = useCallback(async () => {
+    if (clerkUser?.id) {
+      const user = await getUserByClerkId(clerkUser.id);
+      setDbUser(user);
+    }
+  }, [clerkUser?.id]);
+
+  useEffect(() => {
+    fetchDbUser();
+
+    // Create event listeners for profile and follow updates
+    const handleProfileUpdate = () => {
+      setRefreshTrigger(prev => prev + 1);
+    };
+
+    const handleFollowUpdate = () => {
+      fetchDbUser(); // Refetch user data when follow status changes
+      if (showFollowers) {
+        handleShowFollowers();
+      }
+      if (showFollowing) {
+        handleShowFollowing();
+      }
+    };
+
+    // Listen for custom events
+    window.addEventListener('profile-updated', handleProfileUpdate);
+    window.addEventListener('follow-updated', handleFollowUpdate);
+
+    return () => {
+      window.removeEventListener('profile-updated', handleProfileUpdate);
+      window.removeEventListener('follow-updated', handleFollowUpdate);
+    };
+  }, [fetchDbUser, showFollowers, showFollowing]);
+
+  const handleShowFollowers = async () => {
+    if (!dbUser?.id) return;
+    setIsLoadingFollowers(true);
+    try {
+      const fetchedFollowers = await getFollowers(dbUser.id);
+      setFollowers(fetchedFollowers as unknown as User[]);
+      setShowFollowers(true);
+    } catch (error) {
+      console.error("Error fetching followers:", error);
+    } finally {
+      setIsLoadingFollowers(false);
+    }
+  };
+
+  const handleShowFollowing = async () => {
+    if (!dbUser?.id) return;
+    setIsLoadingFollowing(true);
+    try {
+      const fetchedFollowing = await getFollowing(dbUser.id);
+      setFollowing(fetchedFollowing as unknown as User[]);
+      setShowFollowing(true);
+    } catch (error) {
+      console.error("Error fetching following:", error);
+    } finally {
+      setIsLoadingFollowing(false);
+    }
+  };
+
+  if (!clerkUser || !dbUser) {
+    return (
+      <div className="space-y-6 sticky top-[88px] h-[calc(100vh-120px)]">
+        <div className="flex flex-col h-[80%]">
+          <div className="flex flex-col bg-card rounded-lg shadow-sm animate-pulse">
+            <div className="h-24 overflow-hidden">
+              <Skeleton className="h-20 w-20 rounded-full mb-4" />
+            </div>
+          </div>
+        </div>
+
+        <Card className="p-4 h-[20%]">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        </Card>
+
+        <FollowModal
+          isOpen={showFollowers}
+          onClose={() => setShowFollowers(false)}
+          title="Followers"
+          users={followers}
+        />
+
+        <FollowModal
+          isOpen={showFollowing}
+          onClose={() => setShowFollowing(false)}
+          title="Following"
+          users={following}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="sticky top-20">
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center text-center">
-            <Link
-              href={`/profile/${user.username}`}
-              className="flex flex-col items-center justify-center">
-              <Avatar className="w-20 h-20 border-2 ">
-                <AvatarImage src={user.image || "/avatar.png"} />
+    <div className="space-y-6 sticky top-[88px] h-[calc(100vh-120px)]">
+      <div className="flex flex-col h-[80%]">
+        <div className="flex flex-col bg-card rounded-lg shadow-sm overflow-hidden border-0 lg:border">
+          {/* Cover Image */}
+          <div className="h-24 overflow-hidden">
+            {dbUser.coverImage ? (
+              <img 
+                src={dbUser.coverImage}
+                alt="Cover"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400"></div>
+            )}
+          </div>
+          
+          {/* Profile Info */}
+          <div className="px-6 pb-6">
+            <div className="relative -mt-12 mb-4">
+              <Avatar className="h-24 w-24 border-4 border-background">
+                <AvatarImage src={dbUser.image || clerkUser.imageUrl} />
+                <AvatarFallback>
+                  {clerkUser.firstName?.[0]}
+                  {clerkUser.lastName?.[0]}
+                </AvatarFallback>
               </Avatar>
-
-              <div className="mt-4 space-y-1">
-                <h3 className="font-semibold">{user.name}</h3>
-                <p className="text-sm text-muted-foreground">{user.username}</p>
-              </div>
-            </Link>
-
-            {user.bio && <p className="mt-3 text-sm text-muted-foreground">{user.bio}</p>}
-
-            <div className="w-full">
-              <Separator className="my-4" />
-              <div className="flex justify-between">
-                <div>
-                  <p className="font-medium">{user._count.following}</p>
-                  <p className="text-xs text-muted-foreground">Following</p>
-                </div>
-                <Separator orientation="vertical" />
-                <div>
-                  <p className="font-medium">{user._count.followers}</p>
-                  <p className="text-xs text-muted-foreground">Followers</p>
-                </div>
-              </div>
-              <Separator className="my-4" />
             </div>
 
-            <div className="w-full space-y-2 text-sm">
-              <div className="flex items-center text-muted-foreground">
-                <MapPinIcon className="w-4 h-4 mr-2" />
-                {user.location || "No location"}
-              </div>
-              <div className="flex items-center text-muted-foreground">
-                <LinkIcon className="w-4 h-4 mr-2 shrink-0" />
-                {user.website ? (
-                  <a href={`${user.website}`} className="hover:underline truncate" target="_blank">
-                    {user.website}
+            <div className="space-y-1">
+              <h2 className="text-xl font-semibold">{dbUser.name || clerkUser.fullName}</h2>
+              <p className="text-sm text-muted-foreground">@{dbUser.username}</p>
+            </div>
+
+            <p className="mt-4 text-sm text-foreground/80 line-clamp-3">
+              {dbUser.bio || "No bio yet"}
+            </p>
+
+            <div className="flex gap-4 mt-4">
+              <Button
+                variant="outline"
+                className="flex-1 h-auto py-2"
+                onClick={handleShowFollowers}
+                disabled={isLoadingFollowers}
+              >
+                <div className="text-center">
+                  <div className="font-semibold text-base">{dbUser._count?.followers || 0}</div>
+                  <div className="text-xs text-muted-foreground">Followers</div>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 h-auto py-2"
+                onClick={handleShowFollowing}
+                disabled={isLoadingFollowing}
+              >
+                <div className="text-center">
+                  <div className="font-semibold text-base">{dbUser._count?.following || 0}</div>
+                  <div className="text-xs text-muted-foreground">Following</div>
+                </div>
+              </Button>
+            </div>
+
+            {/* User Details */}
+            <div className="mt-6 space-y-3 text-sm">
+              {dbUser.location && (
+                <div className="flex items-center text-muted-foreground">
+                  <MapPin className="h-4 w-4 mr-2" />
+                  <span>{dbUser.location}</span>
+                </div>
+              )}
+              {dbUser.website && (
+                <div className="flex items-center text-muted-foreground">
+                  <LinkIcon className="h-4 w-4 mr-2" />
+                  <a 
+                    href={dbUser.website.startsWith('http') ? dbUser.website : `https://${dbUser.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-primary transition-colors"
+                  >
+                    {dbUser.website}
                   </a>
-                ) : (
-                  "No website"
-                )}
+                </div>
+              )}
+              <div className="flex items-center text-muted-foreground">
+                <CalendarDays className="h-4 w-4 mr-2" />
+                <span>Joined {new Date(dbUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
               </div>
             </div>
           </div>
-        </CardContent>
+        </div>
+      </div>
+
+      {/* Help and Contact Section */}
+      <Card className="p-4 h-[20%] flex flex-col justify-center border-0 lg:border">
+        <div className="flex flex-col gap-2">
+          <Button 
+            variant="ghost" 
+            className="flex items-center gap-3 justify-start h-10 w-full" 
+            asChild
+          >
+            <Link href="/help">
+              <HelpCircle className="w-5 h-5" />
+              Help & Support
+            </Link>
+          </Button>
+          <Button 
+            variant="ghost" 
+            className="flex items-center gap-3 justify-start h-10 w-full" 
+            asChild
+          >
+            <Link href="/contact">
+              <Mail className="w-5 h-5" />
+              Contact Us
+            </Link>
+          </Button>
+        </div>
       </Card>
+
+      <FollowModal
+        isOpen={showFollowers}
+        onClose={() => setShowFollowers(false)}
+        title="Followers"
+        users={followers}
+      />
+
+      <FollowModal
+        isOpen={showFollowing}
+        onClose={() => setShowFollowing(false)}
+        title="Following"
+        users={following}
+      />
     </div>
   );
 }
-
-export default Sidebar;
-
-const UnAuthenticatedSidebar = () => (
-  <div className="sticky top-20">
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-center text-xl font-semibold">Welcome Back!</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-center text-muted-foreground mb-4">
-          Login to access your profile and connect with others.
-        </p>
-        <SignInButton mode="modal">
-          <Button className="w-full" variant="outline">
-            Login
-          </Button>
-        </SignInButton>
-        <SignUpButton mode="modal">
-          <Button className="w-full mt-2" variant="default">
-            Sign Up
-          </Button>
-        </SignUpButton>
-      </CardContent>
-    </Card>
-  </div>
-);
