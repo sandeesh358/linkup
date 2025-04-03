@@ -80,7 +80,7 @@ export async function getRandomUsers() {
 
     if (!userId) return [];
 
-    // get 3 random users exclude ourselves & users that we already follow
+    // get 4 random users exclude ourselves & users that we already follow
     const randomUsers = await prisma.user.findMany({
       where: {
         AND: [
@@ -108,7 +108,7 @@ export async function getRandomUsers() {
           },
         },
       } as any,
-      take: 3,
+      take: 4,
     });
 
     return randomUsers;

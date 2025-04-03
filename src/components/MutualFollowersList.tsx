@@ -5,100 +5,95 @@ import Link from 'next/link';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageCircle, Search, Loader2 } from 'lucide-react';
+import { MessageCircle, Search, Loader2, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRouter } from 'next/navigation';
+import { formatDistanceToNow } from 'date-fns';
+import { Badge } from "@/components/ui/badge";
 
 interface User {
   id: string;
+  clerkId: string;
   username: string;
   name: string | null;
   image: string | null;
   createdAt?: string;
+  latestMessage?: {
+    content: string;
+    createdAt: string;
+    senderId: string;
+  } | null;
+  unreadCount: number;
 }
 
 interface MessageButtonProps {
   userId: string;
+  clerkId: string;
   username: string;
   name: string | null;
 }
 
-const MessageButton = ({ userId, username, name }: MessageButtonProps) => {
+const MessageButton = ({ userId, clerkId, username, name }: MessageButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   
   const handleClick = async (e: React.MouseEvent) => {
-    if (!userId) {
-      e.preventDefault();
-      toast.error('Cannot start chat with this user');
-      return;
-    }
+    e.preventDefault();
     
-    // Validate the user ID format first
-    if (!/^[a-zA-Z0-9_-]+$/.test(userId)) {
-      e.preventDefault();
-      toast.error('Invalid user ID format');
+    console.log('MessageButton clicked with:', { userId, clerkId, username, name });
+    
+    if (!userId) {
+      console.error('Missing database ID:', { userId });
+      toast.error('Cannot start chat with this user');
       return;
     }
     
     setIsLoading(true);
     
     try {
-      // Pre-fetch user data to verify user exists
-      const response = await fetch(`/api/users/${userId}`, { 
-        method: 'GET',
+      // Create or get conversation using the database ID
+      console.log('Creating conversation with recipientId:', userId);
+      const conversationResponse = await fetch('/api/conversations', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        cache: 'no-store' // Make sure we're getting fresh data
+        body: JSON.stringify({ recipientId: userId })
       });
-      
-      if (!response.ok) {
-        e.preventDefault();
-        
-        if (response.status === 404) {
-          toast.error('User not found. Cannot start chat.');
+
+      if (!conversationResponse.ok) {
+        const errorData = await conversationResponse.json().catch(() => ({}));
+        console.error('Conversation creation error:', errorData);
+        if (errorData.message === "Recipient not found in database") {
+          toast.error('User not found. Please try again later.');
         } else {
-          const errorData = await response.json().catch(() => ({}));
-          toast.error(errorData.message || 'Cannot start chat at this time');
+          toast.error(errorData.message || 'Failed to start conversation');
         }
-        
         setIsLoading(false);
         return;
       }
+
+      const conversationData = await conversationResponse.json();
+      console.log('Conversation created:', conversationData);
+
+      // If everything is successful, navigate to chat using the database ID
+      console.log('Navigating to chat with database ID:', userId);
+      router.push(`/chat/${userId}`);
       
-      // Pre-fetch conversation to ensure it exists or will be created
-      try {
-        const conversationResponse = await fetch('/api/conversations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ recipientId: userId })
-        });
-        
-        if (!conversationResponse.ok) {
-          const errorData = await conversationResponse.json().catch(() => ({}));
-          console.warn('Conversation creation warning:', errorData);
-          // Continue with navigation anyway - we'll handle errors on the chat page
-        }
-      } catch (convError) {
-        console.warn('Failed to prefetch conversation:', convError);
-        // Continue with navigation - we'll handle this error on the chat page
-      }
-      
-      // Allow navigation to proceed
     } catch (err) {
-      console.error('Error checking user data:', err);
-      // Don't block navigation if it's just a fetch error
-      // But show a warning
-      toast.error('Connection issue - chat may not load properly');
+      console.error('Error starting chat:', err);
+      toast.error('Failed to start chat. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
   
   return (
-    <Link
-      href={`/chat/${userId}`}
-      className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-full flex items-center gap-2 transition-colors"
+    <button
       onClick={handleClick}
+      className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-full flex items-center gap-2 transition-colors"
       aria-label={`Chat with ${name || username}`}
+      disabled={isLoading}
     >
       {isLoading ? (
         <>
@@ -111,40 +106,25 @@ const MessageButton = ({ userId, username, name }: MessageButtonProps) => {
           <span className="text-sm font-medium">Message</span>
         </>
       )}
-    </Link>
+    </button>
   );
 }
 
 export default function MutualFollowersList() {
   const [mutualFollowers, setMutualFollowers] = useState<User[]>([]);
-  const [filteredFollowers, setFilteredFollowers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMutualFollowers = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Use our optimized API endpoint
-        const response = await fetch('/api/mutual-followers', {
-          // Include cache settings for better performance
-          cache: 'no-cache',
-          next: { revalidate: 60 } // Revalidate every 60 seconds
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch mutual followers');
-        }
-        
+        const response = await fetch('/api/mutual-followers');
+        if (!response.ok) throw new Error('Failed to fetch mutual followers');
         const data = await response.json();
         setMutualFollowers(data);
-        setFilteredFollowers(data);
       } catch (error) {
         console.error('Error fetching mutual followers:', error);
-        setError('Unable to load mutual followers');
+        toast.error('Failed to load mutual followers');
       } finally {
         setIsLoading(false);
       }
@@ -153,94 +133,13 @@ export default function MutualFollowersList() {
     fetchMutualFollowers();
   }, []);
 
-  // Filter followers based on search input
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredFollowers(mutualFollowers);
-      return;
-    }
-
-    const query = searchQuery.toLowerCase();
-    const filtered = mutualFollowers.filter(user => {
-      const name = user.name?.toLowerCase() || '';
-      const username = user.username.toLowerCase();
-      return name.includes(query) || username.includes(query);
-    });
-    
-    setFilteredFollowers(filtered);
-  }, [searchQuery, mutualFollowers]);
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Mutual Followers</span>
-            <Skeleton className="h-4 w-8" />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 py-2">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-1 flex-1">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Mutual Followers</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4 text-red-500">
-            <p>{error}</p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="text-sm text-blue-500 hover:underline mt-2"
-            >
-              Try again
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (mutualFollowers.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Mutual Followers</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4 text-gray-500">
-            <p>No mutual followers found</p>
-            <p className="text-sm mt-1">
-              Follow others so they can follow you back
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const filteredFollowers = mutualFollowers.filter(user =>
+    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (user.name?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <Card>
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <span>Mutual Followers</span>
@@ -248,64 +147,87 @@ export default function MutualFollowersList() {
             {mutualFollowers.length}
           </span>
         </CardTitle>
-        <div className="relative mt-3">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400" />
-          </div>
-          <Input 
-            type="search"
-            placeholder="Search followers..." 
-            className="pl-10 text-sm"
+        <div className="relative">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search mutual followers..."
+            className="pl-8"
             value={searchQuery}
-            onChange={handleSearch}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {filteredFollowers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>No results found for "{searchQuery}"</p>
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="text-sm text-blue-500 hover:underline mt-2"
-              >
-                Clear search
-              </button>
+        <ScrollArea className="h-[400px] pr-4">
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-[150px]" />
+                    <Skeleton className="h-3 w-[100px]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredFollowers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
+              <div className="mb-4 p-3 rounded-full bg-muted">
+                <Users className="h-6 w-6" />
+              </div>
+              <p className="text-center">
+                {searchQuery
+                  ? 'No mutual followers found'
+                  : 'No mutual followers yet'}
+              </p>
             </div>
           ) : (
-            filteredFollowers.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all group border border-gray-100 dark:border-gray-800 hover:border-primary/30 dark:hover:border-primary/30 hover:shadow-sm"
-              >
-                <Avatar className="h-12 w-12 border border-gray-200 dark:border-gray-700">
-                  <AvatarImage src={user.image || '/avatar.png'} alt={user.username} />
-                  <AvatarFallback>
-                    {user.name?.[0]?.toUpperCase() || user.username?.[0]?.toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center">
-                    <p className="font-medium text-base truncate group-hover:text-primary transition-colors">
-                      {user.name || user.username}
-                    </p>
-                    {/* Online indicator would go here */}
+          <div className="space-y-4">
+            {filteredFollowers.map((user) => (
+              <div key={user.id} className="flex items-center justify-between py-2">
+                <Link
+                  href={`/profile/${user.username}`}
+                  className="flex items-center gap-3 hover:underline flex-1 min-w-0"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.image || undefined} />
+                    <AvatarFallback>
+                      {user.name?.[0] || user.username[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{user.name || user.username}</p>
+                    {user.latestMessage && (
+                      <div className="mt-1">
+                        <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                          {user.latestMessage.content}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(user.latestMessage.createdAt), { addSuffix: true })}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">
-                    @{user.username}
-                  </p>
-                  {user.createdAt && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Joined {new Date(user.createdAt).toLocaleDateString()}
-                    </p>
+                </Link>
+                <div className="flex items-center gap-2">
+                  {user.unreadCount > 0 && (
+                    <Badge variant="default" className="bg-primary">
+                      {user.unreadCount}
+                    </Badge>
                   )}
+                  <MessageButton
+                    userId={user.id}
+                    clerkId={user.clerkId}
+                    username={user.username}
+                    name={user.name}
+                  />
                 </div>
-                <MessageButton userId={user.id} username={user.username} name={user.name} />
               </div>
-            ))
+            ))}
+          </div>
           )}
-        </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );

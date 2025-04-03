@@ -15,16 +15,17 @@ async function WhoToFollow() {
 
   return (
     <>
+      {/* Desktop View - Show 3 suggestions */}
       {/* Desktop View */}
       <Card className="hidden lg:block border bg-background">
         <CardContent className="p-6">
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h3 className="text-base font-semibold mb-4">Suggested for you</h3>
-            {typedUsers.map((user) => (
+            {typedUsers.slice(0, 3).map((user) => (
               <div key={user.id as string} className="flex gap-2 items-center justify-between">
                 <div className="flex items-center gap-1">
                   <Link href={`/profile/${user.username}`}>
-                    <Avatar>
+                    <Avatar className="h-8 w-8">
                       <AvatarImage src={user.image ?? "/avatar.png"} />
                       <AvatarFallback>
                         {user.name?.[0] || user.username[0].toUpperCase()}
@@ -36,7 +37,6 @@ async function WhoToFollow() {
                       {user.name}
                     </Link>
                     <p className="text-muted-foreground">@{user.username}</p>
-                    <p className="text-muted-foreground">{user._count?.followers} followers</p>
                   </div>
                 </div>
                 <FollowButton userId={user.id as string} />
@@ -45,17 +45,23 @@ async function WhoToFollow() {
           </div>
         </CardContent>
       </Card>
+      
+ {/* Mobile View - Instagram Style */}
+ <div className="lg:hidden relative">
+        {/* Glassmorphism Blur Effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 
+                        dark:from-blue-500/5 dark:via-purple-500/5 dark:to-pink-500/5 backdrop-blur-xl rounded-xl"></div>
 
-      {/* Mobile View - PostCard Style */}
-      <div className="lg:hidden">
-        <Card className="overflow-hidden">
+        {/* Content Container */}
+        <Card className="relative z-10 overflow-hidden shadow-lg bg-white/30 dark:bg-black/30 
+                         backdrop-blur-md rounded-xl border border-white/20 dark:border-black/20">
           <CardContent className="py-2 px-4">
-            <div className="flex gap-3 overflow-x-auto no-scrollbar">
-              {typedUsers.map((user) => (
-                <div key={user.id as string} className="flex flex-col items-center justify-center min-w-[40px] max-w-[40px]">
+            <div className="grid grid-cols-4 gap-3 w-full">
+              {typedUsers.slice(0, 4).map((user) => (
+                <div key={user.id} className="flex flex-col items-center justify-center">
                   <div className="relative flex justify-center">
                     <Link href={`/profile/${user.username}`}>
-                      <Avatar className="h-[40px] w-[40px] border-[1.5px] border-background">
+                      <Avatar className="h-[45px] w-[45px] border-[1.5px] border-background">
                         <AvatarImage src={user.image ?? "/avatar.png"} className="object-cover" />
                         <AvatarFallback className="text-sm">
                           {user.name?.[0] || user.username[0].toUpperCase()}
@@ -63,17 +69,16 @@ async function WhoToFollow() {
                       </Avatar>
                     </Link>
                     <FollowButton 
-                      userId={user.id as string} 
+                      userId={user.id} 
                       variant="overlay"
                       size="icon"
-                      className="!absolute !bottom-0 !right-0 transform translate-x-0.5 translate-y-0.5 scale-[0.7] !h-5 !w-5"
+                      className="!absolute !bottom-0 !right-0 transform translate-x-0.5 translate-y-0.5 
+                                 scale-[0.7] !h-5 !w-5"
                     />
                   </div>
-                  <div className="w-full text-center flex justify-center mt-1">
-                    <Link 
-                      href={`/profile/${user.username}`} 
-                      className="text-[10px] font-medium block truncate leading-tight"
-                    >
+                  <div className="w-full text-center mt-1">
+                    <Link href={`/profile/${user.username}`} 
+                          className="text-[10px] font-medium block truncate leading-tight px-1">
                       {user.name}
                     </Link>
                   </div>
@@ -87,4 +92,6 @@ async function WhoToFollow() {
   );
 }
 
+
 export default WhoToFollow;
+

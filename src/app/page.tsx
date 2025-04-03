@@ -1,54 +1,73 @@
 import { getPosts } from "@/actions/post.action";
 import { getDbUserId } from "@/actions/user.action";
 import CreatePost from "@/components/CreatePost";
-import PostCard from "@/components/PostCard";
+import PostCard, { Post } from "@/components/PostCard";
 import WhoToFollow from "@/components/WhoToFollow";
+import UnauthenticatedState from "@/components/UnauthenticatedState";
 import { currentUser } from "@clerk/nextjs/server";
-import { Post } from "@/components/PostCard";
 
 export default async function Home() {
   const user = await currentUser();
+  
+  if (!user) {
+    return <UnauthenticatedState />;
+  }
+
   const posts = await getPosts();
   const dbUserId = await getDbUserId();
-  const typedPosts = posts as unknown as Post[];
+  
+  // Cast the posts to match our Post interface
+  const typedPosts = posts.map(post => ({
+    ...post,
+    _count: {
+      likes: post.likes.length,
+      comments: post.comments.length
+    }
+  })) as Post[];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-      <div className="lg:col-span-6">
-        {/* Mobile WhoToFollow - Show at top */}
-        <div className="lg:hidden fixed top-16 left-0 right-0 z-50">
-          <div className="bg-background/95 backdrop-blur-md border-b border-border/40 px-4 py-2 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)]">
-            <WhoToFollow />
-          </div>
+    <>
+      {/* Dynamic Background Glow */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black">
+          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 dark:opacity-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 via-transparent to-blue-100/50 dark:from-blue-500/20 dark:via-transparent dark:to-blue-500/20 animate-pulse"></div>
         </div>
-
-        <div className="space-y-4 mt-4 px-4 lg:px-0 pt-20 lg:pt-0">
-          {typedPosts.length > 0 ? (
-            <div className="space-y-4">
-              {typedPosts.map((post) => (
-                <PostCard key={post.id} post={post} dbUserId={dbUserId} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500">No posts to show yet. Be the first to post!</p>
-            </div>
-          )}
-        </div>
+        {/* Decorative circles for visual interest */}
+        <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-100/50 dark:bg-blue-500/20 rounded-full blur-xl"></div>
+        <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-100/50 dark:bg-blue-500/20 rounded-full blur-xl"></div>
       </div>
 
-      <div className="hidden lg:block lg:col-span-4 space-y-6">
-        <div className="sticky top-20 space-y-6">
-          <div className="space-y-6">
-            <WhoToFollow />
-            {user && (
-              <div className="mt-6">
-                <CreatePost />
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        <div className="lg:col-span-6">
+          <div className="space-y-4 px-4 lg:px-0">
+            {/* Mobile WhoToFollow - Show inline */}
+            <div className="lg:hidden">
+              <WhoToFollow />
+            </div>
+
+            {typedPosts.length > 0 ? (
+              <div className="space-y-4">
+                {typedPosts.map((post) => (
+                  <PostCard key={post.id} post={post} dbUserId={dbUserId} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No posts to show yet. Be the first to post!</p>
               </div>
             )}
           </div>
         </div>
+
+        {/* Right Sidebar - Desktop View */}
+        <div className="hidden lg:block lg:col-span-4">
+          <div className="sticky top-20 space-y-6">
+            <CreatePost />
+            <WhoToFollow />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

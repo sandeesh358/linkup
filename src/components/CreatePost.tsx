@@ -117,8 +117,10 @@ function CreatePost() {
       <Card 
         className={`${isCreatePostPage ? 'min-h-full rounded-none border-0 lg:min-h-0 lg:rounded-xl lg:border lg:shadow-lg' : 'mb-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200'}`}
       >
+        
         <CardContent className={`${isCreatePostPage ? 'h-full flex flex-col p-4 lg:p-6' : 'pt-6'}`}>
           <div className="space-y-4 flex-1">
+            
             <div className="flex space-x-4">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}

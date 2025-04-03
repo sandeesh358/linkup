@@ -15,9 +15,20 @@ async function Navbar() {
           <div className="flex items-center gap-6">
             <Link 
               href="/" 
-              className="text-xl font-bold text-blue-600 dark:text-blue-500 font-mono tracking-wider hover:text-blue-700 dark:hover:text-blue-400 transition-colors"
+              className="group flex items-center space-x-2"
             >
-              LinkUp
+              <div className="relative">
+                <div className="absolute inset-0 bg-blue-500/20 blur-lg rounded-lg"></div>
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-all duration-300 relative">
+                  <span className="text-lg font-bold text-white">L</span>
+                </div>
+              </div>
+              <div className="relative">
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent animate-shimmer">
+                  LinkUp
+                </span>
+                <div className="absolute -bottom-0.5 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
             </Link>
           </div>
 

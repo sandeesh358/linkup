@@ -4,9 +4,10 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
 import { Toaster } from "react-hot-toast";
-import FloatingCreatePost from "@/components/FloatingCreatePost";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
+import { cn } from "@/lib/utils";
+import { VideoProvider } from "@/context/VideoContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,30 +33,31 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <body className={cn("min-h-screen bg-background font-sans antialiased", geistSans.variable, geistMono.variable)}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
-            <div className="min-h-screen">
-              <Navbar />
-
-              <main className="py-8">
-                {/* container to center the content */}
-                <div className="max-w-7xl mx-auto px-4">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <div className="hidden lg:block lg:col-span-3">
-                      <Sidebar />
-                    </div>
-                    <div className="lg:col-span-9">{children}</div>
-                  </div>
-                </div>
-              </main>
-              <FloatingCreatePost />
+            {/* Global Glow Effect */}
+            <div className="fixed inset-0 -z-10 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black">
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 dark:opacity-20"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 via-transparent to-blue-100/50 dark:from-blue-500/20 dark:via-transparent dark:to-blue-500/20 animate-pulse"></div>
+              </div>
+              {/* Decorative circles for visual interest */}
+              <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-100/50 dark:bg-blue-500/20 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-100/50 dark:bg-blue-500/20 rounded-full blur-xl"></div>
             </div>
-            <Toaster />
+
+            <div className="relative min-h-screen">
+              <Navbar />
+              <VideoProvider>
+                <AuthenticatedLayout>{children}</AuthenticatedLayout>
+              </VideoProvider>
+              <Toaster />
+            </div>
           </ThemeProvider>
         </body>
       </html>

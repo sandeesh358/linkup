@@ -346,18 +346,53 @@ export async function createComment(postId: string, content: string) {
   }
 }
 
+async function deleteFileFromUploadThing(url: string) {
+  try {
+    // Extract the file key from the URL
+    const fileKey = url.split('/').pop();
+    if (!fileKey) return;
+
+    // Delete the file from UploadThing
+    await fetch(`https://api.uploadthing.com/api/deleteFile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.UPLOADTHING_TOKEN}`,
+      },
+      body: JSON.stringify({
+        fileKeys: [fileKey],
+      }),
+    });
+  } catch (error) {
+    console.error('Error deleting file from UploadThing:', error);
+  }
+}
+
 export async function deletePost(postId: string) {
   try {
     const userId = await getDbUserId();
 
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      select: { authorId: true },
+      select: { 
+        authorId: true,
+        image: true,
+        video: true 
+      },
     });
 
     if (!post) throw new Error("Post not found");
     if (post.authorId !== userId) throw new Error("Unauthorized - no delete permission");
 
+    // Delete associated files from UploadThing
+    if (post.image) {
+      await deleteFileFromUploadThing(post.image);
+    }
+    if (post.video) {
+      await deleteFileFromUploadThing(post.video);
+    }
+
+    // Delete the post from the database
     await prisma.post.delete({
       where: { id: postId },
     });
