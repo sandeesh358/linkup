@@ -14,6 +14,7 @@ import ImageUpload from "./ImageUpload";
 import VideoUpload from "./VideoUpload";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 function CreatePost() {
   const { user } = useUser();
@@ -43,7 +44,6 @@ function CreatePost() {
     
     fetchDbUser();
     
-    // Listen for profile updates
     const handleProfileUpdate = () => {
       setRefreshTrigger(prev => prev + 1);
     };
@@ -112,21 +112,34 @@ function CreatePost() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
-      className={`${isCreatePostPage ? 'fixed top-16 bottom-0 left-0 right-0 z-40 lg:relative lg:z-auto bg-background lg:bg-transparent' : ''}`}
+      className={cn(
+        isCreatePostPage 
+          ? 'fixed top-16 bottom-0 left-0 right-0 z-40 lg:relative lg:z-auto bg-background lg:bg-transparent' 
+          : ''
+      )}
     >
       <Card 
-        className={`${isCreatePostPage ? 'min-h-full rounded-none border-0 lg:min-h-0 lg:rounded-xl lg:border lg:shadow-lg' : 'mb-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200'}`}
+        className={cn(
+          isCreatePostPage 
+            ? 'min-h-full rounded-none border-0 lg:min-h-0 lg:rounded-xl lg:border lg:shadow-lg' 
+            : 'mb-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200'
+        )}
       >
-        
-        <CardContent className={`${isCreatePostPage ? 'h-full flex flex-col p-4 lg:p-6' : 'pt-6'}`}>
-          <div className="space-y-4 flex-1">
-            
+        <CardContent className={cn(
+          isCreatePostPage 
+            ? 'h-full flex flex-col p-4 lg:p-6 pb-24' 
+            : 'pt-6'
+        )}>
+          <div className="space-y-4 flex-1 overflow-y-auto">
             <div className="flex space-x-4">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className={`${isFocused ? 'scale-110' : ''} transition-transform duration-200`}
+                className={cn(
+                  isFocused ? 'scale-110' : '',
+                  'transition-transform duration-200'
+                )}
               >
                 <Avatar className="w-10 h-10 ring-2 ring-offset-2 ring-primary/20">
                   <AvatarImage src={dbUser?.image || user?.imageUrl || "/avatar.png"} alt={dbUser?.name || user?.fullName || "User"} />
@@ -143,15 +156,18 @@ function CreatePost() {
               >
                 <Textarea
                   placeholder="What's on your mind?"
-                  className={`min-h-[100px] resize-none border-none focus-visible:ring-0 p-0 text-base lg:text-lg placeholder:text-muted-foreground/50 ${
+                  className={cn(
+                    'min-h-[100px] resize-none border-none focus-visible:ring-0 p-0 text-base lg:text-lg placeholder:text-muted-foreground/50',
                     isCreatePostPage 
-                      ? 'h-[calc(100vh-250px)] lg:h-[300px]' 
-                      : ''
-                  } ${
+                      ? 'h-[calc(100vh-300px)] lg:h-[300px]' 
+                      : '',
                     isFocused
                       ? 'placeholder:text-primary/40'
+                      : '',
+                    (showImageUpload || showVideoUpload) && isCreatePostPage
+                      ? 'h-[calc(100vh-450px)]'
                       : ''
-                  }`}
+                  )}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   onFocus={() => setIsFocused(true)}
@@ -168,7 +184,10 @@ function CreatePost() {
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="border rounded-xl p-4 overflow-hidden bg-muted/50"
+                  className={cn(
+                    "border rounded-xl p-4 overflow-hidden bg-muted/50",
+                    isCreatePostPage ? 'mb-4' : ''
+                  )}
                 >
                   <ImageUpload
                     endpoint="postImage"
@@ -187,7 +206,10 @@ function CreatePost() {
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="border rounded-xl p-4 overflow-hidden bg-muted/50"
+                  className={cn(
+                    "border rounded-xl p-4 overflow-hidden bg-muted/50",
+                    isCreatePostPage ? 'mb-4' : ''
+                  )}
                 >
                   <VideoUpload
                     value={videoUrl}
@@ -205,22 +227,24 @@ function CreatePost() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className={`flex items-center justify-between ${
+            className={cn(
+              "flex items-center justify-between",
               isCreatePostPage 
-                ? 'border-t pt-4 mt-4' 
+                ? 'fixed bottom-4 left-0 right-0 bg-background border-t p-4 mx-4 rounded-t-xl shadow-lg lg:relative lg:border-t lg:pt-4 lg:mt-4 lg:bg-transparent lg:mx-0 lg:shadow-none' 
                 : 'border-t pt-4'
-            }`}
+            )}
           >
             <div className="flex space-x-2">
               <Button
                 type="button"
                 variant={showImageUpload ? "secondary" : "ghost"}
                 size="sm"
-                className={`text-muted-foreground transition-all duration-200 ${
+                className={cn(
+                  "text-muted-foreground transition-all duration-200",
                   showImageUpload 
                     ? 'bg-primary/10 text-primary hover:bg-primary/20' 
                     : 'hover:text-primary hover:bg-primary/10'
-                }`}
+                )}
                 onClick={() => {
                   setShowImageUpload(!showImageUpload);
                   if (!showImageUpload) setShowVideoUpload(false);
@@ -252,11 +276,12 @@ function CreatePost() {
                 type="button"
                 variant={showVideoUpload ? "secondary" : "ghost"}
                 size="sm"
-                className={`text-muted-foreground transition-all duration-200 ${
+                className={cn(
+                  "text-muted-foreground transition-all duration-200",
                   showVideoUpload 
                     ? 'bg-primary/10 text-primary hover:bg-primary/20' 
                     : 'hover:text-primary hover:bg-primary/10'
-                }`}
+                )}
                 onClick={() => {
                   setShowVideoUpload(!showVideoUpload);
                   if (!showVideoUpload) setShowImageUpload(false);
@@ -284,30 +309,27 @@ function CreatePost() {
                 )}
               </Button>
             </div>
+
             <Button
-              className={`flex items-center shadow-sm transition-all duration-200 ${
-                content.trim() || imageUrl || videoUrl
-                  ? 'bg-primary hover:bg-primary/90 hover:shadow-md' 
-                  : 'opacity-70'
-              }`}
+              type="button"
+              size="sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={handleSubmit}
-              disabled={(!content.trim() && !imageUrl && !videoUrl) || isPosting}
+              disabled={isPosting || (!content.trim() && !imageUrl && !videoUrl)}
             >
               {isPosting ? (
                 <motion.div
-                  initial={{ scale: 0 }}
+                  initial={{ scale: 0.8 }}
                   animate={{ scale: 1 }}
                   className="flex items-center"
                 >
                   <Loader2Icon className="size-4 mr-2 animate-spin" />
-                  Posting...
+                  Posting
                 </motion.div>
               ) : (
                 <motion.div
-                  initial={{ scale: 0 }}
+                  initial={{ scale: 0.8 }}
                   animate={{ scale: 1 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                   className="flex items-center"
                 >
                   <SendIcon className="size-4 mr-2" />

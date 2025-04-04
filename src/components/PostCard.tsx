@@ -84,6 +84,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
     if (isPlaying) {
       videoRef.current.pause();
       setCurrentlyPlayingId(null);
+      setIsPlaying(false);
     } else {
       // Pause any other playing video first
       if (currentlyPlayingId) {
@@ -92,10 +93,14 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
           otherVideo.pause();
         }
       }
-      videoRef.current.play();
+      videoRef.current.play().catch((error) => {
+        console.error("Error playing video:", error);
+        setIsPlaying(false);
+        setCurrentlyPlayingId(null);
+      });
       setCurrentlyPlayingId(post.id);
+      setIsPlaying(true);
     }
-    setIsPlaying(!isPlaying);
   };
 
   // Handle mute/unmute
@@ -120,18 +125,12 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Video is visible, play it
-            if (currentlyPlayingId !== post.id) {
-              // Pause any other playing video first
-              if (currentlyPlayingId) {
-                const otherVideo = document.querySelector(`video[data-post-id="${currentlyPlayingId}"]`) as HTMLVideoElement;
-                if (otherVideo) {
-                  otherVideo.pause();
-                }
-              }
-              videoRef.current?.play();
-              setIsPlaying(true);
-              setCurrentlyPlayingId(post.id);
+            // Video is visible, play it if it was playing before
+            if (isPlaying && currentlyPlayingId === post.id) {
+              videoRef.current?.play().catch(() => {
+                setIsPlaying(false);
+                setCurrentlyPlayingId(null);
+              });
             }
           } else if (isPlaying) {
             // Video is not visible, pause it
@@ -144,9 +143,9 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
         });
       },
       {
-        root: null, // Use viewport
-        rootMargin: "-64px 0px 0px 0px", // Account for navbar height (64px)
-        threshold: 0.7, // Trigger when 70% of video is visible
+        root: null,
+        rootMargin: "-64px 0px 0px 0px",
+        threshold: 0.7,
       }
     );
 
@@ -280,17 +279,17 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
                     <PlayIcon className="size-12 text-white" />
                   )}
                 </button>
-                <button
-                  onClick={handleMuteToggle}
-                  className="absolute bottom-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-                >
-                  {isMuted ? (
-                    <VolumeXIcon className="size-6 text-white" />
-                  ) : (
-                    <Volume2Icon className="size-6 text-white" />
-                  )}
-                </button>
               </div>
+              <button
+                onClick={handleMuteToggle}
+                className="absolute bottom-4 right-4 p-1.5 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+              >
+                {isMuted ? (
+                  <VolumeXIcon className="size-4 text-white" />
+                ) : (
+                  <Volume2Icon className="size-4 text-white" />
+                )}
+              </button>
             </div>
           )}
 
