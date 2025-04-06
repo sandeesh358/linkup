@@ -2,7 +2,7 @@
 
 import { Button } from "./ui/button";
 import { usePathname, useRouter } from "next/navigation";
-import { X, Home, Plus } from "lucide-react";
+import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
@@ -96,7 +96,7 @@ export default function FloatingCreatePost() {
             onClick={handleClick}
           >
             <motion.div
-              key={isCreatePostPage ? "home" : "post"}
+              key={isCreatePostPage ? "close" : "post"}
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               exit={{ scale: 0, rotate: 180 }}
@@ -107,15 +107,9 @@ export default function FloatingCreatePost() {
               )}
             >
               {isCreatePostPage ? (
-                <div className="flex items-center">
-                  <Home className="h-5 w-5 mr-2" />
-                  Home
-                </div>
+                <X className="h-7 w-7" />
               ) : (
-                <div className="flex items-center">
-                  <Plus className="h-5 w-5 mr-2" />
-                  Post
-                </div>
+                "Post"
               )}
             </motion.div>
           </Button>

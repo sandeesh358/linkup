@@ -127,10 +127,10 @@ function CreatePost() {
       >
         <CardContent className={cn(
           isCreatePostPage 
-            ? 'h-full flex flex-col p-4 lg:p-6 pb-24' 
+            ? 'h-full flex flex-col p-4 lg:p-6 pb-20' 
             : 'pt-6'
         )}>
-          <div className="space-y-4 flex-1 overflow-y-auto">
+          <div className="space-y-4 flex-1">
             <div className="flex space-x-4">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -159,13 +159,13 @@ function CreatePost() {
                   className={cn(
                     'min-h-[100px] resize-none border-none focus-visible:ring-0 p-0 text-base lg:text-lg placeholder:text-muted-foreground/50',
                     isCreatePostPage 
-                      ? 'h-[calc(100vh-300px)] lg:h-[300px]' 
+                      ? 'h-[calc(100vh-250px)] lg:h-[300px]' 
                       : '',
                     isFocused
                       ? 'placeholder:text-primary/40'
                       : '',
                     (showImageUpload || showVideoUpload) && isCreatePostPage
-                      ? 'h-[calc(100vh-450px)]'
+                      ? 'h-[calc(100vh-400px)]'
                       : ''
                   )}
                   value={content}

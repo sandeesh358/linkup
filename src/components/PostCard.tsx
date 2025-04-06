@@ -279,17 +279,17 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
                     <PlayIcon className="size-12 text-white" />
                   )}
                 </button>
+                <button
+                  onClick={handleMuteToggle}
+                  className="absolute bottom-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                >
+                  {isMuted ? (
+                    <VolumeXIcon className="size-6 text-white" />
+                  ) : (
+                    <Volume2Icon className="size-6 text-white" />
+                  )}
+                </button>
               </div>
-              <button
-                onClick={handleMuteToggle}
-                className="absolute bottom-4 right-4 p-1.5 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-              >
-                {isMuted ? (
-                  <VolumeXIcon className="size-4 text-white" />
-                ) : (
-                  <Volume2Icon className="size-4 text-white" />
-                )}
-              </button>
             </div>
           )}
 
