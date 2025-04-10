@@ -69,12 +69,14 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const { currentlyPlayingId, setCurrentlyPlayingId, isMuted, setIsMuted } = useVideo();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [hasLiked, setHasLiked] = useState(post.likes.some((like) => like.userId === dbUserId));
-  const [optimisticLikes, setOptmisticLikes] = useState(post._count.likes);
+  const [optimisticLikes, setOptmisticLikes] = useState(post._count?.likes || post.likes?.length || 0);
   const [showComments, setShowComments] = useState(false);
 
   // Handle video playback
@@ -85,6 +87,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
       videoRef.current.pause();
       setCurrentlyPlayingId(null);
       setIsPlaying(false);
+      setIsManuallyPaused(true);
     } else {
       // Pause any other playing video first
       if (currentlyPlayingId) {
@@ -100,6 +103,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
       });
       setCurrentlyPlayingId(post.id);
       setIsPlaying(true);
+      setIsManuallyPaused(false);
     }
   };
 
@@ -115,6 +119,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
   const handleVideoEnd = () => {
     setIsPlaying(false);
     setCurrentlyPlayingId(null);
+    setIsManuallyPaused(false);
   };
 
   // Handle video visibility
@@ -125,12 +130,15 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Video is visible, play it if it was playing before
-            if (isPlaying && currentlyPlayingId === post.id) {
+            // Video is visible
+            if (!isManuallyPaused && !currentlyPlayingId) {
+              // If no video is playing and this video wasn't manually paused, play it
               videoRef.current?.play().catch(() => {
                 setIsPlaying(false);
                 setCurrentlyPlayingId(null);
               });
+              setCurrentlyPlayingId(post.id);
+              setIsPlaying(true);
             }
           } else if (isPlaying) {
             // Video is not visible, pause it
@@ -154,7 +162,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
     return () => {
       observer.disconnect();
     };
-  }, [isPlaying, currentlyPlayingId, post.id, setCurrentlyPlayingId]);
+  }, [isPlaying, currentlyPlayingId, post.id, setCurrentlyPlayingId, isManuallyPaused]);
 
   // Sync mute state with video element
   useEffect(() => {
@@ -256,37 +264,54 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
 
           {/* POST VIDEO */}
           {post.video && (
-            <div ref={videoContainerRef} className="relative rounded-lg overflow-hidden group max-h-[600px]">
-              <video 
+            <div 
+              ref={videoContainerRef}
+              className="relative rounded-lg overflow-hidden max-h-[600px] bg-black"
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              onClick={handlePlayPause}
+            >
+              <video
                 ref={videoRef}
-                src={post.video} 
-                className="w-full h-auto object-contain max-h-[600px]"
-                playsInline
                 data-post-id={post.id}
+                src={post.video}
+                className="w-full h-full object-contain"
+                loop
+                playsInline
                 onEnded={handleVideoEnd}
                 muted={isMuted}
-              >
-                Your browser does not support the video tag.
-              </video>
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+              />
+              
+              {/* Video Controls Overlay */}
+              <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${(isHovered || !isPlaying) ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="absolute inset-0 bg-black/30" />
+                
+                {/* Play/Pause Button */}
+                <div className="relative z-10">
+                  <button 
+                    className="p-3 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePlayPause();
+                    }}
+                  >
+                    {isPlaying ? (
+                      <PauseIcon className="w-8 h-8 text-white" />
+                    ) : (
+                      <PlayIcon className="w-8 h-8 text-white" />
+                    )}
+                  </button>
+                </div>
+                
+                {/* Mute Button */}
                 <button
-                  onClick={handlePlayPause}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  {isPlaying ? (
-                    <PauseIcon className="size-12 text-white" />
-                  ) : (
-                    <PlayIcon className="size-12 text-white" />
-                  )}
-                </button>
-                <button
-                  onClick={handleMuteToggle}
                   className="absolute bottom-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                  onClick={handleMuteToggle}
                 >
                   {isMuted ? (
-                    <VolumeXIcon className="size-6 text-white" />
+                    <VolumeXIcon className="w-5 h-5 text-white" />
                   ) : (
-                    <Volume2Icon className="size-6 text-white" />
+                    <Volume2Icon className="w-5 h-5 text-white" />
                   )}
                 </button>
               </div>

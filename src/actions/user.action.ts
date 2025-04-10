@@ -341,16 +341,16 @@ export const getCachedUserId = (): string | null => {
   
   try {
     // Try to get the cached user ID
-    const cachedUserId = localStorage.getItem('sipna_user_id');
+    const cachedUserId = localStorage.getItem('linkup_user_id');
     
     if (!cachedUserId) return null;
     
     // Check if the cache is still valid (less than 24 hours old)
-    const cacheTimestamp = localStorage.getItem('sipna_user_id_timestamp');
+    const cacheTimestamp = localStorage.getItem('linkup_user_id_timestamp');
     
     if (!cacheTimestamp) {
       // Timestamp missing, clear the invalid cache
-      localStorage.removeItem('sipna_user_id');
+      localStorage.removeItem('linkup_user_id');
       return null;
     }
     
@@ -361,8 +361,8 @@ export const getCachedUserId = (): string | null => {
       
       if (isNaN(timestamp) || now - timestamp > expirationTime) {
         // Cache is invalid or expired, clear it
-        localStorage.removeItem('sipna_user_id');
-        localStorage.removeItem('sipna_user_id_timestamp');
+        localStorage.removeItem('linkup_user_id');
+        localStorage.removeItem('linkup_user_id_timestamp');
         return null;
       }
       
@@ -370,8 +370,8 @@ export const getCachedUserId = (): string | null => {
     } catch (parseError) {
       console.error('Error parsing cache timestamp:', parseError);
       // If timestamp parsing fails, clear the invalid cache
-      localStorage.removeItem('sipna_user_id');
-      localStorage.removeItem('sipna_user_id_timestamp');
+      localStorage.removeItem('linkup_user_id');
+      localStorage.removeItem('linkup_user_id_timestamp');
       return null;
     }
   } catch (error) {
@@ -385,8 +385,8 @@ export const cacheUserId = (userId: string): void => {
   if (typeof window === 'undefined') return;
   
   try {
-    localStorage.setItem('sipna_user_id', userId);
-    localStorage.setItem('sipna_user_id_timestamp', Date.now().toString());
+    localStorage.setItem('linkup_user_id', userId);
+    localStorage.setItem('linkup_user_id_timestamp', Date.now().toString());
     console.log('User ID cached successfully:', userId);
   } catch (error) {
     console.error('Error caching user ID:', error);
@@ -398,8 +398,8 @@ export const clearUserCache = (): void => {
   if (typeof window === 'undefined') return;
   
   try {
-    localStorage.removeItem('sipna_user_id');
-    localStorage.removeItem('sipna_user_id_timestamp');
+    localStorage.removeItem('linkup_user_id');
+    localStorage.removeItem('linkup_user_id_timestamp');
     console.log('User cache cleared successfully');
   } catch (error) {
     console.error('Error clearing user cache:', error);

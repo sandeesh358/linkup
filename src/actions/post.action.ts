@@ -32,7 +32,7 @@ export async function createPost(content: string, image: string, video: string) 
   }
 }
 
-export async function getPosts() {
+export async function getPosts(cursor?: string, limit: number = 10) {
   try {
     const dbUserId = await getDbUserId();
     if (!dbUserId) throw new Error("User not found");
@@ -111,11 +111,24 @@ export async function getPosts() {
           select: {
             userId: true
           }
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true
+          }
         }
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      take: limit,
+      ...(cursor && {
+        cursor: {
+          id: cursor
+        },
+        skip: 1
+      })
     });
 
     // Get posts from mutual followers
@@ -162,12 +175,24 @@ export async function getPosts() {
           select: {
             userId: true
           }
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true
+          }
         }
       },
       orderBy: {
         createdAt: 'desc'
       },
-      take: 10 // Get at least 10 posts from mutual followers
+      take: limit,
+      ...(cursor && {
+        cursor: {
+          id: cursor
+        },
+        skip: 1
+      })
     });
 
     // Get random posts from other users
@@ -214,22 +239,40 @@ export async function getPosts() {
           select: {
             userId: true
           }
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true
+          }
         }
       },
       orderBy: {
         createdAt: 'desc'
       },
-      take: 10 // Get 10 random posts
+      take: limit,
+      ...(cursor && {
+        cursor: {
+          id: cursor
+        },
+        skip: 1
+      })
     });
 
     // Combine and shuffle posts
     const allPosts = [...ownPosts, ...mutualPosts, ...randomPosts];
     const shuffledPosts = allPosts.sort(() => Math.random() - 0.5);
 
-    return shuffledPosts;
+    return {
+      posts: shuffledPosts,
+      nextCursor: shuffledPosts.length > 0 ? shuffledPosts[shuffledPosts.length - 1].id : null
+    };
   } catch (error) {
     console.error("Error fetching posts:", error);
-    return [];
+    return {
+      posts: [],
+      nextCursor: null
+    };
   }
 }
 

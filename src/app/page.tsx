@@ -5,6 +5,7 @@ import PostCard, { Post } from "@/components/PostCard";
 import WhoToFollow from "@/components/WhoToFollow";
 import UnauthenticatedState from "@/components/UnauthenticatedState";
 import { currentUser } from "@clerk/nextjs/server";
+import InfiniteScrollPosts from "@/components/InfiniteScrollPosts";
 
 export default async function Home() {
   const user = await currentUser();
@@ -13,7 +14,7 @@ export default async function Home() {
     return <UnauthenticatedState />;
   }
 
-  const posts = await getPosts();
+  const { posts, nextCursor } = await getPosts();
   const dbUserId = await getDbUserId();
   
   // Cast the posts to match our Post interface
@@ -47,11 +48,7 @@ export default async function Home() {
             </div>
 
             {typedPosts.length > 0 ? (
-              <div className="space-y-4">
-                {typedPosts.map((post) => (
-                  <PostCard key={post.id} post={post} dbUserId={dbUserId} />
-                ))}
-              </div>
+              <InfiniteScrollPosts initialPosts={typedPosts} initialCursor={nextCursor} />
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500">No posts to show yet. Be the first to post!</p>
