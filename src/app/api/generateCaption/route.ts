@@ -18,12 +18,12 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "system",
-          content: "You are an AI that generates captions for images.",
+          content: "You are an AI that generates engaging captions for images. Include relevant emojis to make the caption more expressive and fun. Keep the caption concise and natural.",
         },
         {
           role: "user",
           content: [
-            { type: "text", text: "Generate a short caption for this image:" },
+            { type: "text", text: "Generate a short, engaging caption with emojis for this image:" },
             { type: "image_url", image_url: { url: imageUrl } },
           ],
         },

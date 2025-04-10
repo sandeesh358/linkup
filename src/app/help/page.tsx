@@ -87,10 +87,6 @@ const HelpPage = () => {
               <h3 className="font-medium">Email Support</h3>
               <p className="text-gray-600">connectwithlinkup@gmail.com</p>
             </div>
-            <div>
-              <h3 className="font-medium">Phone Support</h3>
-              <p className="text-gray-600">+1 (555) 123-4567</p>
-            </div>
           </div>
         </div>
       </div>

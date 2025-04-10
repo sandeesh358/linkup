@@ -18,10 +18,6 @@ const ContactPage = () => {
               <p className="text-gray-600">connectwithlinkup@gmail.com</p>
             </div>
             <div>
-              <h3 className="font-semibold">Phone</h3>
-              <p className="text-gray-600">+1 (555) 123-4567</p>
-            </div>
-            <div>
               <h3 className="font-semibold">Address</h3>
               <p className="text-gray-600">
                 Sipna College of Engineering and Technology<br />
