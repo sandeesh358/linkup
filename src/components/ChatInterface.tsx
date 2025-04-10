@@ -131,6 +131,217 @@ const styles = `
       background-color: rgba(59, 130, 246, 0.1);
     }
   }
+
+  .message-bubble {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+    perspective: 1000px;
+  }
+
+  .message-bubble:hover {
+    transform: translateY(-2px) translateZ(10px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .message-bubble:active {
+    transform: translateY(0) translateZ(0);
+  }
+
+  .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .typing-indicator span {
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+    animation: typing 1s infinite;
+  }
+
+  .typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typing {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-4px) scale(1.2);
+    }
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .glass-effect {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  .floating-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .floating-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: float 3s infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(10px, -10px);
+    }
+    50% {
+      transform: translate(-5px, 15px);
+    }
+    75% {
+      transform: translate(-15px, -5px);
+    }
+  }
+
+  .gradient-border {
+    position: relative;
+    border-radius: inherit;
+    background: linear-gradient(45deg, var(--primary), var(--primary-foreground));
+    padding: 1px;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(45deg, var(--primary), var(--primary-foreground));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .message-content {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .message-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .avatar-glow {
+    position: relative;
+  }
+
+  .avatar-glow::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    background: radial-gradient(circle at center, var(--primary) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .avatar-glow:hover::after {
+    opacity: 0.3;
+  }
+
+  .button-glow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .button-glow::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, var(--primary), transparent, var(--primary));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .button-glow:hover::before {
+    opacity: 0.3;
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  .scroll-indicator.visible {
+    opacity: 1;
+  }
+
+  .scroll-indicator:hover {
+    transform: translateX(-50%) scale(1.1);
+  }
+
+  .message-status {
+    position: relative;
+  }
+
+  .message-status::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(45deg, var(--primary), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .message-status:hover::after {
+    opacity: 0.1;
+  }
 `;
 
 export default function ChatInterface({
@@ -307,101 +518,175 @@ export default function ChatInterface({
   };
 
   return (
-    <Card className="flex flex-col h-full bg-white dark:bg-[#111827] relative rounded-xl overflow-hidden shadow-lg border-0">
-      {/* Header */}
-      <CardHeader className="border-b border-gray-100 dark:border-gray-800 flex-none py-3 bg-white dark:bg-[#1f2937] z-20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="md:hidden hover:bg-blue-50 dark:hover:bg-blue-900/20">
-              <ArrowLeft className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            </Button>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="relative h-full"
+    >
+      {/* Floating particles background */}
+      <div className="floating-particles">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="floating-particle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              color: 'var(--primary)',
+            }}
+          />
+        ))}
+      </div>
+
+      <Card className="flex flex-col h-full bg-background/50 dark:bg-[#111827]/50 relative rounded-xl overflow-hidden shadow-lg border-0 backdrop-blur-xl">
+        {/* Header */}
+        <CardHeader className="border-b border-border/50 dark:border-gray-800/50 flex-none py-3 bg-background/80 dark:bg-[#1f2937]/80 backdrop-blur-xl z-20">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 ring-2 ring-blue-100 dark:ring-blue-900">
-                <AvatarImage src={recipientImage || undefined} />
-                <AvatarFallback className="bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
-                  {(recipientName?.[0] || recipientUsername?.[0] || '?').toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
-                  {recipientName || recipientUsername}
-                </CardTitle>
-                <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                  {isTyping ? (
-                    <span className="text-blue-600 dark:text-blue-400">Typing...</span>
-                  ) : isOnline ? (
-                    <>
-                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                      <span>Online</span>
-                    </>
-                  ) : (
-                    <span>Last seen {lastSeen}</span>
-                  )}
-                </p>
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: -5 }}
+                whileTap={{ scale: 0.9 }}
+                className="md:hidden"
+              >
+                <Button variant="ghost" size="icon" className="hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+                  <ArrowLeft className="h-5 w-5 text-primary" />
+                </Button>
+              </motion.button>
+              <div className="flex items-center gap-3">
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="avatar-glow"
+                >
+                  <Avatar className="h-10 w-10 ring-2 ring-primary/20 dark:ring-primary/40 transition-all duration-300">
+                    <AvatarImage src={recipientImage || undefined} />
+                    <AvatarFallback className="bg-primary/10 dark:bg-primary/20 text-primary">
+                      {(recipientName?.[0] || recipientUsername?.[0] || '?').toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
+                <div>
+                  <CardTitle className="text-base font-semibold text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">
+                    {recipientName || recipientUsername}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    {isTyping ? (
+                      <span className="text-primary flex items-center gap-1">
+                        <span className="typing-indicator">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </span>
+                        <span>Typing...</span>
+                      </span>
+                    ) : isOnline ? (
+                      <>
+                        <motion.span
+                          animate={{
+                            scale: [1, 1.2, 1],
+                            opacity: [0.5, 1, 0.5],
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }}
+                          className="w-2 h-2 rounded-full bg-green-500"
+                        />
+                        <span>Online</span>
+                      </>
+                    ) : (
+                      <span>Last seen {lastSeen}</span>
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="button-glow"
+                  >
+                    <Button variant="ghost" size="icon" className="hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+                      <MoreVertical className="h-5 w-5 text-primary" />
+                    </Button>
+                  </motion.button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 glass-effect border-border/50">
+                  <DropdownMenuItem className="text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+                    <Info className="mr-2 h-4 w-4" />
+                    View Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+                    <Search className="mr-2 h-4 w-4" />
+                    Search Messages
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+                    <Contact className="mr-2 h-4 w-4" />
+                    Export Chat
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors">
+                    <Ban className="mr-2 h-4 w-4" />
+                    Block User
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors">
+                    <Flag className="mr-2 h-4 w-4" />
+                    Report
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Chat
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                  <MoreVertical className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg">
-                <DropdownMenuItem className="text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                  <Info className="mr-2 h-4 w-4" />
-                  View Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                  <Search className="mr-2 h-4 w-4" />
-                  Search Messages
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                  <Contact className="mr-2 h-4 w-4" />
-                  Export Chat
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
-                  <Ban className="mr-2 h-4 w-4" />
-                  Block User
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
-                  <Flag className="mr-2 h-4 w-4" />
-                  Report
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Chat
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#111827] px-4">
-        <div className="py-4 space-y-4">
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto bg-background/30 dark:bg-[#111827]/30 px-4 scrollbar-none relative">
+          <div className="py-4 space-y-4">
             {isLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-start gap-3">
-                  <Skeleton className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700" />
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: i * 0.1 }}
+                    className="flex items-start gap-3"
+                  >
+                    <Skeleton className="h-8 w-8 rounded-full" />
                     <div className="space-y-2">
-                    <Skeleton className="h-4 w-[200px] bg-gray-200 dark:bg-gray-700" />
-                    <Skeleton className="h-3 w-[150px] bg-gray-200 dark:bg-gray-700" />
+                      <Skeleton className="h-4 w-[200px]" />
+                      <Skeleton className="h-3 w-[150px]" />
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             ) : messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500 dark:text-gray-400">
-              <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-4">
-                <MessageSquare className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                </div>
-                <p className="text-lg font-medium">No messages yet</p>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="flex flex-col items-center justify-center min-h-[400px] text-muted-foreground"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  className="w-16 h-16 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-4 gradient-border"
+                >
+                  <MessageSquare className="w-8 h-8 text-primary" />
+                </motion.div>
+                <p className="text-lg font-medium bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">
+                  No messages yet
+                </p>
                 <p className="text-sm mt-2">Start a conversation!</p>
-              </div>
+              </motion.div>
             ) : (
               <div className="space-y-4">
                 <AnimatePresence>
@@ -411,71 +696,79 @@ export default function ChatInterface({
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
-                    className="flex w-full"
+                      transition={{ duration: 0.3 }}
+                      className="flex w-full"
                     >
-                      <div
+                      <motion.div
                         ref={el => {
                           if (el) messageRefs.current[message.id] = el;
                         }}
-                      onClick={() => handleMessageClick(message.id)}
-                      className={`group relative max-w-[60%] md:max-w-[75%] lg:max-w-[85%] rounded-2xl p-3 shadow-sm cursor-pointer hover:bg-opacity-95 ${
+                        onClick={() => handleMessageClick(message.id)}
+                        whileHover={{ scale: 1.01, rotate: message.senderId === recipientId ? -1 : 1 }}
+                        whileTap={{ scale: 0.99 }}
+                        className={`group relative max-w-[60%] md:max-w-[75%] lg:max-w-[85%] rounded-2xl p-3 shadow-sm cursor-pointer message-bubble ${
                           message.senderId === recipientId
-                          ? 'bg-white dark:bg-[#1f2937] text-gray-900 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-800 ml-0 mr-auto' 
-                          : 'bg-blue-600 dark:bg-blue-500 text-white rounded-br-none ml-auto mr-0'
-                      }`}
-                    >
-                      {message.replyTo && (
-                        <div 
-                          className={`mb-2 px-2 py-1 text-xs flex flex-col cursor-pointer ${
-                            message.senderId === recipientId
-                              ? 'bg-gray-100/80 dark:bg-gray-800/50'
-                              : 'bg-blue-700/30 dark:bg-blue-600/30'
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const repliedMessage = messages.find(m => m.id === message.replyTo?.id);
-                            if (repliedMessage && messageRefs.current[repliedMessage.id]) {
-                              messageRefs.current[repliedMessage.id]?.scrollIntoView({
-                                behavior: 'smooth',
-                                block: 'center'
-                              });
-                              messageRefs.current[repliedMessage.id]?.classList.add('highlight-message');
-                              setTimeout(() => {
-                                messageRefs.current[repliedMessage.id]?.classList.remove('highlight-message');
-                              }, 2000);
-                            }
-                          }}
-                        >
-                          <p className={`font-medium text-xs mb-0.5 ${
-                            message.senderId === recipientId
-                              ? 'text-blue-600 dark:text-blue-400'
-                              : 'text-white'
-                          }`}>
-                            {message.replyTo.senderId === user?.id ? 'You' : recipientName || recipientUsername}
-                          </p>
-                          <p className={`text-xs line-clamp-2 ${
-                            message.senderId === recipientId
-                              ? 'text-gray-600 dark:text-gray-300'
-                              : 'text-white/90'
-                          }`}>
-                            {message.replyTo.content}
-                          </p>
-                        </div>
-                      )}
-                        <div className="break-all whitespace-pre-wrap">
+                            ? 'bg-background dark:bg-[#1f2937] text-foreground rounded-bl-none border border-border/50 dark:border-gray-800/50 ml-0 mr-auto' 
+                            : 'bg-primary text-primary-foreground rounded-br-none ml-auto mr-0'
+                        }`}
+                      >
+                        {message.replyTo && (
+                          <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className={`mb-2 px-2 py-1 text-xs flex flex-col cursor-pointer ${
+                              message.senderId === recipientId
+                                ? 'bg-primary/5 dark:bg-primary/10'
+                                : 'bg-primary-foreground/10'
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const repliedMessage = messages.find(m => m.id === message.replyTo?.id);
+                              if (repliedMessage && messageRefs.current[repliedMessage.id]) {
+                                messageRefs.current[repliedMessage.id]?.scrollIntoView({
+                                  behavior: 'smooth',
+                                  block: 'center'
+                                });
+                                messageRefs.current[repliedMessage.id]?.classList.add('highlight-message');
+                                setTimeout(() => {
+                                  messageRefs.current[repliedMessage.id]?.classList.remove('highlight-message');
+                                }, 2000);
+                              }
+                            }}
+                          >
+                            <p className={`font-medium text-xs mb-0.5 ${
+                              message.senderId === recipientId
+                                ? 'text-primary'
+                                : 'text-primary-foreground'
+                            }`}>
+                              {message.replyTo.senderId === user?.id ? 'You' : recipientName || recipientUsername}
+                            </p>
+                            <p className={`text-xs line-clamp-2 ${
+                              message.senderId === recipientId
+                                ? 'text-muted-foreground'
+                                : 'text-primary-foreground/90'
+                            }`}>
+                              {message.replyTo.content}
+                            </p>
+                          </motion.div>
+                        )}
+                        <div className="break-all whitespace-pre-wrap message-content">
                           <p className="text-sm leading-relaxed">
                             {getMessagePreview(message.content, message.id)}
                           </p>
                           {isMessageLong(message.content) && (
-                            <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleMessageExpansion(message.id);
-                            }}
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleMessageExpansion(message.id);
+                              }}
                               className={`text-xs mt-1 flex items-center gap-1 ${
                                 message.senderId === recipientId
-                                ? 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300'
-                                  : 'text-white/80 hover:text-white'
+                                  ? 'text-primary hover:text-primary/80'
+                                  : 'text-primary-foreground/80 hover:text-primary-foreground'
                               }`}
                             >
                               {expandedMessages.has(message.id) ? (
@@ -487,62 +780,66 @@ export default function ChatInterface({
                                   Read more <ChevronDown className="w-3 h-3" />
                                 </>
                               )}
-                            </button>
+                            </motion.button>
                           )}
                         </div>
-                        <div className="flex items-center justify-end gap-1 mt-1">
+                        <div className="flex items-center justify-end gap-1 mt-1 message-status">
                           <p className={`text-xs ${
                             message.senderId === recipientId
-                              ? 'text-gray-500 dark:text-gray-400'
-                              : 'text-white/80'
+                              ? 'text-muted-foreground'
+                              : 'text-primary-foreground/80'
                           }`}>
                             {formatDistanceToNow(new Date(message.createdAt), {
                               addSuffix: true,
                             })}
                           </p>
                           {message.senderId !== recipientId && (
-                            <span className="text-xs text-white/80">
+                            <span className="text-xs text-primary-foreground/80">
                               {message.read ? <CheckCheck className="w-3 h-3" /> : <Check className="w-3 h-3" />}
                             </span>
                           )}
                         </div>
 
-                      {selectedMessageId === message.id && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          className={`absolute ${
-                            message.senderId === recipientId
-                              ? 'right-0 top-0'
-                              : 'left-0 top-0'
-                          } mt-[-40px] bg-white dark:bg-[#1f2937] rounded-lg shadow-lg border border-gray-100 dark:border-gray-800 py-1 min-w-[140px] z-50`}
-                        >
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleReply(message);
-                            }}
-                            className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2"
+                        {selectedMessageId === message.id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className={`absolute ${
+                              message.senderId === recipientId
+                                ? 'right-0 top-0'
+                                : 'left-0 top-0'
+                            } mt-[-40px] glass-effect rounded-lg shadow-lg py-1 min-w-[140px] z-50`}
                           >
-                            <MessageSquare className="w-4 h-4" />
-                            Reply
-                          </button>
-                          {message.senderId === user?.id && (
-                            <button
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteMessage(message.id);
+                                handleReply(message);
                               }}
-                              className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+                              className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors flex items-center gap-2"
                             >
-                              <Trash2 className="w-4 h-4" />
-                              Delete
-                            </button>
-                          )}
-                        </motion.div>
-                      )}
-                      </div>
+                              <MessageSquare className="w-4 h-4" />
+                              Reply
+                            </motion.button>
+                            {message.senderId === user?.id && (
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteMessage(message.id);
+                                }}
+                                className="w-full px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors flex items-center gap-2"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                Delete
+                              </motion.button>
+                            )}
+                          </motion.div>
+                        )}
+                      </motion.div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -550,100 +847,108 @@ export default function ChatInterface({
               </div>
             )}
           </div>
-      </div>
+        </div>
 
-      {/* Input Area */}
-      <div className="border-t border-gray-100 dark:border-gray-800 p-4 flex-none bg-white dark:bg-[#1f2937] z-20">
-        {replyingTo && (
-          <div className="flex items-start gap-2 mb-2 p-2 bg-gray-50/50 dark:bg-gray-800/30 rounded-lg">
-            <div className="flex-shrink-0 w-1 self-stretch bg-blue-500/40 dark:bg-blue-400/40 rounded-full"></div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-medium text-blue-600/90 dark:text-blue-400/90">
-                  Replying to {replyingTo.senderId === user?.id ? 'yourself' : recipientName || recipientUsername}
+        {/* Input Area */}
+        <div className="border-t border-border/50 dark:border-gray-800/50 p-4 flex-none bg-background/80 dark:bg-[#1f2937]/80 backdrop-blur-xl z-20">
+          {replyingTo && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-start gap-2 mb-2 p-2 bg-primary/5 dark:bg-primary/10 rounded-lg gradient-border"
+            >
+              <div className="flex-shrink-0 w-1 self-stretch bg-primary/40 rounded-full"></div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-medium text-primary">
+                    Replying to {replyingTo.senderId === user?.id ? 'yourself' : recipientName || recipientUsername}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={cancelReply}
+                    className="text-muted-foreground hover:text-foreground transition-colors -mr-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-1">
+                  {replyingTo.content}
                 </p>
+              </div>
+            </motion.div>
+          )}
+          <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+            <div className="relative">
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.9 }}
+                type="button"
+                onClick={() => setShowAttachmentOptions(!showAttachmentOptions)}
+                className="button-glow"
+              >
                 <Button
-                  type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={cancelReply}
-                  className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 -mr-1"
+                  className="text-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
                 >
-                  <X className="h-4 w-4" />
+                  <Smile className="h-5 w-5" />
                 </Button>
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
-                {replyingTo.content}
-              </p>
+              </motion.button>
+              <AnimatePresence>
+                {showAttachmentOptions && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute bottom-full left-0 mb-2 glass-effect rounded-xl shadow-lg p-2 w-64 grid grid-cols-4 gap-2"
+                  >
+                    {[
+                      { icon: ImageIcon, label: 'Photo' },
+                      { icon: Camera, label: 'Camera' },
+                      { icon: FileText, label: 'Document' },
+                      { icon: Contact, label: 'Contact' },
+                      { icon: MapPin, label: 'Location' },
+                      { icon: File, label: 'File' },
+                    ].map(({ icon: Icon, label }, index) => (
+                      <motion.button
+                        key={label}
+                        whileHover={{ scale: 1.05, rotate: index % 2 ? 2 : -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex flex-col items-center justify-center p-2 h-20 hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors rounded-lg gradient-border"
+                      >
+                        <Icon className="h-6 w-6 mb-1 text-primary" />
+                        <span className="text-xs text-foreground">{label}</span>
+                      </motion.button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </div>
-        )}
-        <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-          <div className="relative">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowAttachmentOptions(!showAttachmentOptions)}
-              className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type a message..."
+              className="flex-1 bg-background/50 dark:bg-[#111827]/50 rounded-full px-4 py-2 focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 border-border/50 dark:border-gray-800/50 shadow-sm text-foreground placeholder:text-muted-foreground"
+            />
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.9 }}
+              type="submit"
+              disabled={isSending || !newMessage.trim()}
+              className="button-glow bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
-              <Smile className="h-5 w-5" />
-            </Button>
-            <AnimatePresence>
-              {showAttachmentOptions && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute bottom-full left-0 mb-2 bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg p-2 w-64 grid grid-cols-4 gap-2"
-                >
-                  <Button variant="ghost" className="flex flex-col items-center justify-center p-2 h-20 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                    <ImageIcon className="h-6 w-6 mb-1 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs text-gray-700 dark:text-gray-200">Photo</span>
-                  </Button>
-                  <Button variant="ghost" className="flex flex-col items-center justify-center p-2 h-20 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                    <Camera className="h-6 w-6 mb-1 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs text-gray-700 dark:text-gray-200">Camera</span>
-                  </Button>
-                  <Button variant="ghost" className="flex flex-col items-center justify-center p-2 h-20 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                    <FileText className="h-6 w-6 mb-1 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs text-gray-700 dark:text-gray-200">Document</span>
-                  </Button>
-                  <Button variant="ghost" className="flex flex-col items-center justify-center p-2 h-20 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                    <Contact className="h-6 w-6 mb-1 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs text-gray-700 dark:text-gray-200">Contact</span>
-                  </Button>
-                  <Button variant="ghost" className="flex flex-col items-center justify-center p-2 h-20 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                    <MapPin className="h-6 w-6 mb-1 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs text-gray-700 dark:text-gray-200">Location</span>
-                  </Button>
-                  <Button variant="ghost" className="flex flex-col items-center justify-center p-2 h-20 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                    <File className="h-6 w-6 mb-1 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs text-gray-700 dark:text-gray-200">File</span>
-                  </Button>
-                </motion.div>
+              {isSending ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
               )}
-            </AnimatePresence>
-          </div>
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 bg-gray-50 dark:bg-[#111827] rounded-full px-4 py-2 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:ring-offset-0 border-0 shadow-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
-          />
-          <Button 
-            type="submit" 
-            disabled={isSending || !newMessage.trim()}
-            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-full shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Send className="h-5 w-5" />
-            )}
-          </Button>
-        </form>
-      </div>
-    </Card>
+            </motion.button>
+          </form>
+        </div>
+      </Card>
+    </motion.div>
   );
 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ComputerVisionClient } from "@azure/cognitiveservices-computervision";
 import { ApiKeyCredentials } from "@azure/ms-rest-js";
 
-// Emoji mapping for common image descriptions
+// Enhanced emoji mapping for more detailed image descriptions
 const emojiMap: { [key: string]: string } = {
   // People and faces
   "person": "👤",
@@ -110,7 +110,83 @@ const emojiMap: { [key: string]: string } = {
   "congratulations": "🎉",
   "birthday": "🎂",
   "christmas": "🎄",
-  "holiday": "🎉"
+  "holiday": "🎉",
+  
+  // Additional detailed categories
+  "business": "💼",
+  "work": "💼",
+  "office": "🏢",
+  "meeting": "👥",
+  "presentation": "📊",
+  "technology": "💻",
+  "innovation": "💡",
+  "research": "🔬",
+  "science": "🔬",
+  "medical": "🏥",
+  "health": "❤️",
+  "fitness": "💪",
+  "yoga": "🧘",
+  "meditation": "🧘‍♂️",
+  "wildlife": "🦁",
+  "landscape": "🏞️",
+  "architecture": "🏛️",
+  "concert": "🎪",
+  "festival": "🎪",
+  "wedding": "💒",
+  "graduation": "🎓",
+  "school": "🏫",
+  "university": "🎓",
+  "football": "⚽",
+  "basketball": "🏀",
+  "tennis": "🎾",
+  "golf": "⛳",
+  "swimming": "🏊",
+  "running": "🏃",
+  "cycling": "🚴",
+  "adventure": "🗺️",
+  "hiking": "🥾",
+  "camping": "⛺",
+  "sunset": "🌅",
+  "sunrise": "🌄",
+  "street": "🏙️",
+  "restaurant": "🍽️",
+  "cooking": "👨‍🍳",
+  "baking": "🥖",
+  "wine": "🍷",
+  "cocktail": "🍸",
+  "fashion": "👗",
+  "style": "💅",
+  "beauty": "💄",
+  "makeup": "💄",
+  "jewelry": "💍",
+  "accessories": "👜",
+  "interior": "🏠",
+  "decor": "🏠",
+  "furniture": "🪑",
+  "plants": "🌱",
+  "pets": "🐾",
+  "dogs": "🐕",
+  "cats": "🐱",
+  "birds": "🐦",
+  "animals": "🐘",
+  "children": "👶",
+  "friends": "👥",
+  "group": "👥",
+  "team": "👥",
+  "community": "🤝",
+  "social": "🤝",
+  "charity": "🤝",
+  "volunteer": "🤝",
+  "environment": "🌍",
+  "climate": "🌡️",
+  "sustainability": "♻️",
+  "recycling": "♻️",
+  "green": "🌿",
+  "eco": "🌱",
+  "weather": "🌤️",
+  "storm": "⛈️",
+  "sunny": "☀️",
+  "hot": "🔥"
 };
 
 // Historical figures and their descriptions
@@ -141,18 +217,19 @@ const historicalFigures = {
 };
 
 type CaptionTheme = 'social_reformer' | 'educator';
+type ImageContext = 'nature' | 'urban' | 'people' | 'food' | 'art' | 'sports' | 'travel' | 'technology' | 'default';
 
 // Enhanced caption templates for historical figures
 const captionTemplates: Record<CaptionTheme, string[]> = {
   social_reformer: [
-    "Honoring the visionary legacy of {name}! {emoji1} A beacon of {description} whose light continues to guide us. {emoji2} Let's carry forward the torch of progress! {emoji3}",
-    "In the footsteps of greatness - {name}! {emoji1} {description} {emoji2} Their vision still illuminates our path forward! {emoji3}",
-    "Remembering the revolutionary spirit of {name}! {emoji1} {description} {emoji2} Their dreams are our inspiration! {emoji3}"
+    "Honoring the visionary legacy of {name}! {emoji1} A beacon of {description} {emoji2} {emoji3}",
+    "In the footsteps of greatness - {name}! {emoji1} {description} {emoji2} {emoji3}",
+    "Remembering the revolutionary spirit of {name}! {emoji1} {description} {emoji2} {emoji3}"
   ],
   educator: [
-    "Celebrating the enlightened vision of {name}! {emoji1} {description} {emoji2} Knowledge is the path to liberation! {emoji3}",
-    "Drawing inspiration from {name}! {emoji1} {description} {emoji2} Education is the most powerful weapon for change! {emoji3}",
-    "Paying tribute to {name}! {emoji1} {description} {emoji2} Their educational legacy lives on in every student's dream! {emoji3}"
+    "Celebrating the enlightened vision of {name}! {emoji1} {description} {emoji2} {emoji3}",
+    "Drawing inspiration from {name}! {emoji1} {description} {emoji2} {emoji3}",
+    "Paying tribute to {name}! {emoji1} {description} {emoji2} {emoji3}"
   ]
 };
 
@@ -161,19 +238,19 @@ type TextType = 'quote' | 'announcement' | 'celebration';
 // Add text-related templates
 const textTemplates: Record<TextType, string[]> = {
   quote: [
-    "✨ Wisdom that resonates: '{text}' {emoji1} A powerful reminder that inspires change! {emoji2}",
-    "💭 Words that move mountains: '{text}' {emoji1} Let these thoughts guide our journey! {emoji2}",
-    "📝 Timeless wisdom: '{text}' {emoji1} Words that continue to inspire generations! {emoji2}"
+    "{emoji1} {text} {emoji2}",
+    "{emoji1} {text} {emoji2}",
+    "{emoji1} {text} {emoji2}"
   ],
   announcement: [
-    "🎯 Important Update: '{text}' {emoji1} Mark your calendars and be part of this moment! {emoji2}",
-    "📢 Attention: '{text}' {emoji1} Don't miss this significant announcement! {emoji2}",
-    "🌟 Exciting News: '{text}' {emoji1} Join us in this remarkable journey! {emoji2}"
+    "{emoji1} {text} {emoji2}",
+    "{emoji1} {text} {emoji2}",
+    "{emoji1} {text} {emoji2}"
   ],
   celebration: [
-    "🎉 Celebrating a special moment: '{text}' {emoji1} Join us in this joyous occasion! {emoji2}",
-    "✨ Making history: '{text}' {emoji1} A milestone worth celebrating! {emoji2}",
-    "🌟 Marking this moment: '{text}' {emoji1} Together in celebration! {emoji2}"
+    "{emoji1} {text} {emoji2}",
+    "{emoji1} {text} {emoji2}",
+    "{emoji1} {text} {emoji2}"
   ]
 };
 
@@ -244,74 +321,193 @@ function analyzeTextContent(text: string): {
   return { type, context, emojis };
 }
 
-// Function to create engaging social media caption
+// Enhanced caption templates for different contexts
+const imageCaptionTemplates: Record<ImageContext, string[]> = {
+  nature: [
+    "Capturing the breathtaking beauty of {description} {emoji1} {emoji2}",
+    "Nature's masterpiece: {description} {emoji1} {emoji2}",
+    "In awe of {description} {emoji1} {emoji2}",
+    "Mother Nature at her finest: {description} {emoji1} {emoji2}",
+    "A moment of serenity with {description} {emoji1} {emoji2}",
+    "The natural world never ceases to amaze: {description} {emoji1} {emoji2}"
+  ],
+  urban: [
+    "City vibes: {description} {emoji1} {emoji2}",
+    "Urban exploration: {description} {emoji1} {emoji2}",
+    "City life captured: {description} {emoji1} {emoji2}",
+    "Metropolitan moments: {description} {emoji1} {emoji2}",
+    "The heartbeat of the city: {description} {emoji1} {emoji2}",
+    "Urban landscape showcasing {description} {emoji1} {emoji2}"
+  ],
+  people: [
+    "Capturing precious moments: {description} {emoji1} {emoji2}",
+    "Life's beautiful moments: {description} {emoji1} {emoji2}",
+    "Memories in the making: {description} {emoji1} {emoji2}",
+    "Special moments: {description} {emoji1} {emoji2}",
+    "The human connection: {description} {emoji1} {emoji2}",
+    "Stories told through {description} {emoji1} {emoji2}"
+  ],
+  food: [
+    "Culinary delights: {description} {emoji1} {emoji2}",
+    "Foodie moments: {description} {emoji1} {emoji2}",
+    "Taste of perfection: {description} {emoji1} {emoji2}",
+    "Delicious discoveries: {description} {emoji1} {emoji2}",
+    "A feast for the eyes: {description} {emoji1} {emoji2}",
+    "Gastronomic excellence: {description} {emoji1} {emoji2}"
+  ],
+  art: [
+    "Artistic vision: {description} {emoji1} {emoji2}",
+    "Creative expression: {description} {emoji1} {emoji2}",
+    "Art in focus: {description} {emoji1} {emoji2}",
+    "Visual storytelling: {description} {emoji1} {emoji2}",
+    "A masterpiece revealing {description} {emoji1} {emoji2}",
+    "The artist's perspective: {description} {emoji1} {emoji2}"
+  ],
+  sports: [
+    "Action captured: {description} {emoji1} {emoji2}",
+    "Sports moments: {description} {emoji1} {emoji2}",
+    "Game on: {description} {emoji1} {emoji2}",
+    "Athletic excellence: {description} {emoji1} {emoji2}",
+    "The thrill of competition: {description} {emoji1} {emoji2}",
+    "Championship moments: {description} {emoji1} {emoji2}"
+  ],
+  travel: [
+    "Adventure awaits: {description} {emoji1} {emoji2}",
+    "Wanderlust moments: {description} {emoji1} {emoji2}",
+    "Exploring: {description} {emoji1} {emoji2}",
+    "Travel tales: {description} {emoji1} {emoji2}",
+    "Journey to discovery: {description} {emoji1} {emoji2}",
+    "Destination unknown: {description} {emoji1} {emoji2}"
+  ],
+  technology: [
+    "Tech innovation: {description} {emoji1} {emoji2}",
+    "Digital world: {description} {emoji1} {emoji2}",
+    "Future is now: {description} {emoji1} {emoji2}",
+    "Tech spotlight: {description} {emoji1} {emoji2}",
+    "Cutting-edge technology: {description} {emoji1} {emoji2}",
+    "Innovation at its finest: {description} {emoji1} {emoji2}"
+  ],
+  default: [
+    "Capturing the moment: {description} {emoji1} {emoji2}",
+    "Picture perfect: {description} {emoji1} {emoji2}",
+    "In focus: {description} {emoji1} {emoji2}",
+    "Frame worthy: {description} {emoji1} {emoji2}",
+    "A snapshot of {description} {emoji1} {emoji2}",
+    "Through the lens: {description} {emoji1} {emoji2}"
+  ]
+};
+
+// Function to detect image context
+function detectImageContext(caption: string): ImageContext {
+  const lowerCaption = caption.toLowerCase();
+  
+  if (lowerCaption.match(/\b(nature|outdoor|landscape|mountain|beach|ocean|forest|garden|park)\b/)) {
+    return 'nature';
+  }
+  if (lowerCaption.match(/\b(city|street|building|urban|architecture|downtown|metropolitan)\b/)) {
+    return 'urban';
+  }
+  if (lowerCaption.match(/\b(person|people|man|woman|child|family|group|crowd)\b/)) {
+    return 'people';
+  }
+  if (lowerCaption.match(/\b(food|meal|restaurant|cuisine|dish|cooking|baking)\b/)) {
+    return 'food';
+  }
+  if (lowerCaption.match(/\b(art|painting|sculpture|design|creative|artistic)\b/)) {
+    return 'art';
+  }
+  if (lowerCaption.match(/\b(sport|game|athlete|player|team|competition|match)\b/)) {
+    return 'sports';
+  }
+  if (lowerCaption.match(/\b(travel|adventure|explore|journey|destination|trip)\b/)) {
+    return 'travel';
+  }
+  if (lowerCaption.match(/\b(technology|tech|digital|computer|device|innovation)\b/)) {
+    return 'technology';
+  }
+  
+  return 'default';
+}
+
+// Enhanced function to create engaging caption
 function createEngagingCaption(baseCaption: string, figure: any): string {
   // If it's a historical figure, use the historical caption logic
   if (figure) {
     return createHistoricalCaption(baseCaption, figure);
   }
 
-  // Check if the caption contains significant text content
-  const textAnalysis = analyzeTextContent(baseCaption);
-  if (textAnalysis.type) {
-    const templates = textTemplates[textAnalysis.type];
+  // Detect image context
+  const context = detectImageContext(baseCaption);
+  
+  // Get relevant templates
+  const templates = imageCaptionTemplates[context];
     const template = templates[Math.floor(Math.random() * templates.length)];
     
-    // Get unique emojis
-    const uniqueEmojis = Array.from(new Set(textAnalysis.emojis)).slice(0, 3);
-    while (uniqueEmojis.length < 2) {
-      uniqueEmojis.push(textThemeEmojis.wisdom[uniqueEmojis.length]);
-    }
-
-    // Create hashtags based on context
-    const contextHashtags = textAnalysis.context.map(ctx => `#${ctx.charAt(0).toUpperCase() + ctx.slice(1)}`);
-    const typeHashtag = `#${textAnalysis.type.charAt(0).toUpperCase() + textAnalysis.type.slice(1)}`;
-    const defaultHashtags = ['#Inspiration', '#Motivation'];
-    const finalHashtags = Array.from(new Set([...contextHashtags, typeHashtag, ...defaultHashtags])).slice(0, 5);
-
-    return template
-      .replace('{text}', baseCaption)
-      .replace('{emoji1}', uniqueEmojis[0])
-      .replace('{emoji2}', uniqueEmojis[1])
-      + '\n\n'
-      + finalHashtags.join(' ');
-  }
-
-  // For other images, use the default emoji enhancement
-  return enhanceCaptionWithEmojis(baseCaption);
-}
-
-// Function to add emojis to caption
-function enhanceCaptionWithEmojis(caption: string): string {
-  try {
-    let enhancedCaption = caption.toLowerCase();
-    
-    // Add relevant emojis based on keywords
+  // Get relevant emojis
     const emojis: string[] = [];
+  const lowerCaption = baseCaption.toLowerCase();
     
-    // Check for keywords in the caption
+  // Add context-specific emojis
     for (const [keyword, emoji] of Object.entries(emojiMap)) {
-      if (enhancedCaption.includes(keyword)) {
+    if (lowerCaption.includes(keyword)) {
         emojis.push(emoji);
       }
     }
     
     // Add default context emojis if none were found
     if (emojis.length === 0) {
-      // Add camera emoji for image context
-      emojis.push("📸");
+    switch (context) {
+      case 'nature':
+        emojis.push('🌿', '🌳');
+        break;
+      case 'urban':
+        emojis.push('🏙️', '🌆');
+        break;
+      case 'people':
+        emojis.push('👥', '✨');
+        break;
+      case 'food':
+        emojis.push('🍽️', '✨');
+        break;
+      case 'art':
+        emojis.push('🎨', '✨');
+        break;
+      case 'sports':
+        emojis.push('⚽', '🏆');
+        break;
+      case 'travel':
+        emojis.push('✈️', '🗺️');
+        break;
+      case 'technology':
+        emojis.push('💻', '💡');
+        break;
+      default:
+        emojis.push('📸', '✨');
+    }
     }
     
-    // Limit to max 3 most relevant emojis
-    const uniqueEmojis = Array.from(new Set(emojis)).slice(0, 3);
+    // Limit to max 2 most relevant emojis
+    const uniqueEmojis = Array.from(new Set(emojis)).slice(0, 2);
     
-    // Add emojis to the caption
-    return `${uniqueEmojis.join(" ")} ${caption}`;
-  } catch (error) {
-    console.error("Error enhancing caption with emojis:", error);
-    // Return original caption if emoji enhancement fails
-    return caption;
+  // Enhance the caption with more details
+  let enhancedCaption = baseCaption;
+  
+  // Add descriptive adjectives based on context
+  if (context === 'nature' && !lowerCaption.includes('beautiful') && !lowerCaption.includes('stunning')) {
+    enhancedCaption = `the beautiful ${enhancedCaption}`;
+  } else if (context === 'food' && !lowerCaption.includes('delicious') && !lowerCaption.includes('tasty')) {
+    enhancedCaption = `the delicious ${enhancedCaption}`;
+  } else if (context === 'people' && !lowerCaption.includes('happy') && !lowerCaption.includes('smiling')) {
+    enhancedCaption = `the happy ${enhancedCaption}`;
+  } else if (context === 'urban' && !lowerCaption.includes('busy') && !lowerCaption.includes('vibrant')) {
+    enhancedCaption = `the vibrant ${enhancedCaption}`;
   }
+  
+  // Fill template
+  return template
+    .replace('{description}', enhancedCaption)
+    .replace('{emoji1}', uniqueEmojis[0] || '✨')
+    .replace('{emoji2}', uniqueEmojis[1] || '📸');
 }
 
 // Historical caption creation function
@@ -356,14 +552,11 @@ function createHistoricalCaption(baseCaption: string, figure: any): string {
     contextEmojis.push(...themeEmojis.leadership.slice(0, 2));
   }
   
-  // Always add one inspiration emoji
-  contextEmojis.push(themeEmojis.inspiration[0]);
-  
   // Get unique emojis and ensure we have exactly 3
   const uniqueEmojis = Array.from(new Set(contextEmojis));
   const finalEmojis = uniqueEmojis.slice(0, 3);
   while (finalEmojis.length < 3) {
-    finalEmojis.push(themeEmojis.inspiration[finalEmojis.length]);
+    finalEmojis.push(themeEmojis.education[finalEmojis.length]);
   }
 
   // Select and fill template
@@ -377,21 +570,7 @@ function createHistoricalCaption(baseCaption: string, figure: any): string {
     .replace('{emoji2}', finalEmojis[1])
     .replace('{emoji3}', finalEmojis[2]);
 
-  // Add relevant hashtags
-  const relevantHashtags = figure.hashtags
-    .filter((tag: string) => 
-      randomDescription.toLowerCase().includes(tag.toLowerCase()) || 
-      tag === "Inspiration" ||
-      tag === "Legacy"
-    )
-    .slice(0, 4)
-    .map((tag: string) => `#${tag}`);
-
-  // Add some general hashtags
-  const generalHashtags = ['#Legacy', '#Inspiration', '#History'];
-  const finalHashtags = Array.from(new Set([...relevantHashtags, ...generalHashtags])).slice(0, 5);
-
-  return `${caption}\n\n${finalHashtags.join(" ")}`;
+  return caption;
 }
 
 export async function POST(req: NextRequest) {
@@ -423,10 +602,10 @@ export async function POST(req: NextRequest) {
 
     console.log("Calling Azure Vision API...");
 
-    // Generate caption using Azure Computer Vision
+    // Generate caption using Azure Computer Vision with increased maxCandidates
     const result = await computerVisionClient.describeImage(imageUrl, {
       language: "en",
-      maxCandidates: 3,
+      maxCandidates: 5, // Increased from 3 to 5 for better caption selection
     });
 
     console.log("Azure Vision API response:", JSON.stringify(result, null, 2));
@@ -448,11 +627,46 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid caption text" }, { status: 500 });
     }
 
-    // Check if the image is of a historical figure
-    const historicalFigure = identifyHistoricalFigure(bestCaption.text);
+    // Get additional details from other captions to enhance the description
+    let enhancedDescription = bestCaption.text;
     
-    // Create engaging caption
-    const finalCaption = createEngagingCaption(bestCaption.text, historicalFigure);
+    // If we have multiple captions, combine details from them
+    if (result.captions.length > 1) {
+      // Sort captions by confidence
+      const sortedCaptions = [...result.captions].sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
+      
+      // Get unique details from other captions
+      const uniqueDetails = new Set<string>();
+      
+      // Skip the best caption as we already have it
+      for (let i = 1; i < Math.min(3, sortedCaptions.length); i++) {
+        const caption = sortedCaptions[i];
+        if (caption.text && caption.confidence && caption.confidence > 0.5) {
+          // Extract nouns and adjectives that might add detail
+          const words = caption.text.split(' ');
+          for (const word of words) {
+            // Skip common words and words already in the best caption
+            if (word.length > 4 && 
+                !enhancedDescription.toLowerCase().includes(word.toLowerCase()) &&
+                !['the', 'and', 'with', 'that', 'this', 'from', 'have', 'what', 'some', 'there'].includes(word.toLowerCase())) {
+              uniqueDetails.add(word);
+            }
+          }
+        }
+      }
+      
+      // Add unique details to the description if we found any
+      if (uniqueDetails.size > 0) {
+        const detailsArray = Array.from(uniqueDetails).slice(0, 3);
+        enhancedDescription += `, featuring ${detailsArray.join(', ')}`;
+      }
+    }
+
+    // Check if the image is of a historical figure
+    const historicalFigure = identifyHistoricalFigure(enhancedDescription);
+    
+    // Create engaging caption with enhanced context awareness
+    const finalCaption = createEngagingCaption(enhancedDescription, historicalFigure);
     console.log("Final caption:", finalCaption);
 
     return NextResponse.json({ caption: finalCaption });
@@ -460,15 +674,9 @@ export async function POST(req: NextRequest) {
     console.error("Azure Vision API Error:", error);
     
     if (error instanceof Error) {
-      if (error.message.includes("401")) {
-        return NextResponse.json({ error: "Azure Vision API authentication failed. Please check your API key." }, { status: 401 });
-      } else if (error.message.includes("404")) {
-        return NextResponse.json({ error: "Image URL not found or inaccessible" }, { status: 404 });
-      } else if (error.message.includes("429")) {
-        return NextResponse.json({ error: "Azure Vision API rate limit exceeded" }, { status: 429 });
-      }
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
     
-    return NextResponse.json({ error: "Failed to generate caption" }, { status: 500 });
+    return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
   }
 }
