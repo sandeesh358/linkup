@@ -541,9 +541,9 @@ export default function ChatInterface({
       </div>
 
       <Card className="flex flex-col h-full bg-background/50 dark:bg-[#111827]/50 relative rounded-xl overflow-hidden shadow-lg border-0 backdrop-blur-xl">
-        {/* Header */}
+      {/* Header */}
         <CardHeader className="border-b border-border/50 dark:border-gray-800/50 flex-none py-3 bg-background/80 dark:bg-[#1f2937]/80 backdrop-blur-xl z-20">
-          <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <motion.button
                 whileHover={{ scale: 1.1, rotate: -5 }}
@@ -561,18 +561,18 @@ export default function ChatInterface({
                   className="avatar-glow"
                 >
                   <Avatar className="h-10 w-10 ring-2 ring-primary/20 dark:ring-primary/40 transition-all duration-300">
-                    <AvatarImage src={recipientImage || undefined} />
+                <AvatarImage src={recipientImage || undefined} />
                     <AvatarFallback className="bg-primary/10 dark:bg-primary/20 text-primary">
-                      {(recipientName?.[0] || recipientUsername?.[0] || '?').toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  {(recipientName?.[0] || recipientUsername?.[0] || '?').toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
                 </motion.div>
-                <div>
+              <div>
                   <CardTitle className="text-base font-semibold text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">
-                    {recipientName || recipientUsername}
-                  </CardTitle>
+                  {recipientName || recipientUsername}
+                </CardTitle>
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    {isTyping ? (
+                  {isTyping ? (
                       <span className="text-primary flex items-center gap-1">
                         <span className="typing-indicator">
                           <span></span>
@@ -581,8 +581,8 @@ export default function ChatInterface({
                         </span>
                         <span>Typing...</span>
                       </span>
-                    ) : isOnline ? (
-                      <>
+                  ) : isOnline ? (
+                    <>
                         <motion.span
                           animate={{
                             scale: [1, 1.2, 1],
@@ -595,18 +595,18 @@ export default function ChatInterface({
                           }}
                           className="w-2 h-2 rounded-full bg-green-500"
                         />
-                        <span>Online</span>
-                      </>
-                    ) : (
-                      <span>Last seen {lastSeen}</span>
-                    )}
-                  </p>
-                </div>
+                      <span>Online</span>
+                    </>
+                  ) : (
+                    <span>Last seen {lastSeen}</span>
+                  )}
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+          </div>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                   <motion.button
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     whileTap={{ scale: 0.9 }}
@@ -614,43 +614,43 @@ export default function ChatInterface({
                   >
                     <Button variant="ghost" size="icon" className="hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
                       <MoreVertical className="h-5 w-5 text-primary" />
-                    </Button>
+                </Button>
                   </motion.button>
-                </DropdownMenuTrigger>
+              </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 glass-effect border-border/50">
                   <DropdownMenuItem className="text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
-                    <Info className="mr-2 h-4 w-4" />
-                    View Profile
-                  </DropdownMenuItem>
+                  <Info className="mr-2 h-4 w-4" />
+                  View Profile
+                </DropdownMenuItem>
                   <DropdownMenuItem className="text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
-                    <Search className="mr-2 h-4 w-4" />
-                    Search Messages
-                  </DropdownMenuItem>
+                  <Search className="mr-2 h-4 w-4" />
+                  Search Messages
+                </DropdownMenuItem>
                   <DropdownMenuItem className="text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
-                    <Contact className="mr-2 h-4 w-4" />
-                    Export Chat
-                  </DropdownMenuItem>
+                  <Contact className="mr-2 h-4 w-4" />
+                  Export Chat
+                </DropdownMenuItem>
                   <DropdownMenuItem className="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors">
-                    <Ban className="mr-2 h-4 w-4" />
-                    Block User
-                  </DropdownMenuItem>
+                  <Ban className="mr-2 h-4 w-4" />
+                  Block User
+                </DropdownMenuItem>
                   <DropdownMenuItem className="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors">
-                    <Flag className="mr-2 h-4 w-4" />
-                    Report
-                  </DropdownMenuItem>
+                  <Flag className="mr-2 h-4 w-4" />
+                  Report
+                </DropdownMenuItem>
                   <DropdownMenuItem className="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Chat
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Chat
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </CardHeader>
+        </div>
+      </CardHeader>
 
-        {/* Messages Area */}
+      {/* Messages Area */}
         <div className="flex-1 overflow-y-auto bg-background/30 dark:bg-[#111827]/30 px-4 scrollbar-none relative">
-          <div className="py-4 space-y-4">
+        <div className="py-4 space-y-4">
             {isLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
@@ -697,62 +697,62 @@ export default function ChatInterface({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.3 }}
-                      className="flex w-full"
+                    className="flex w-full"
                     >
                       <motion.div
                         ref={el => {
                           if (el) messageRefs.current[message.id] = el;
                         }}
-                        onClick={() => handleMessageClick(message.id)}
+                      onClick={() => handleMessageClick(message.id)}
                         whileHover={{ scale: 1.01, rotate: message.senderId === recipientId ? -1 : 1 }}
                         whileTap={{ scale: 0.99 }}
                         className={`group relative max-w-[60%] md:max-w-[75%] lg:max-w-[85%] rounded-2xl p-3 shadow-sm cursor-pointer message-bubble ${
                           message.senderId === recipientId
                             ? 'bg-background dark:bg-[#1f2937] text-foreground rounded-bl-none border border-border/50 dark:border-gray-800/50 ml-0 mr-auto' 
                             : 'bg-primary text-primary-foreground rounded-br-none ml-auto mr-0'
-                        }`}
-                      >
-                        {message.replyTo && (
+                      }`}
+                    >
+                      {message.replyTo && (
                           <motion.div 
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className={`mb-2 px-2 py-1 text-xs flex flex-col cursor-pointer ${
-                              message.senderId === recipientId
+                          className={`mb-2 px-2 py-1 text-xs flex flex-col cursor-pointer ${
+                            message.senderId === recipientId
                                 ? 'bg-primary/5 dark:bg-primary/10'
                                 : 'bg-primary-foreground/10'
-                            }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const repliedMessage = messages.find(m => m.id === message.replyTo?.id);
-                              if (repliedMessage && messageRefs.current[repliedMessage.id]) {
-                                messageRefs.current[repliedMessage.id]?.scrollIntoView({
-                                  behavior: 'smooth',
-                                  block: 'center'
-                                });
-                                messageRefs.current[repliedMessage.id]?.classList.add('highlight-message');
-                                setTimeout(() => {
-                                  messageRefs.current[repliedMessage.id]?.classList.remove('highlight-message');
-                                }, 2000);
-                              }
-                            }}
-                          >
-                            <p className={`font-medium text-xs mb-0.5 ${
-                              message.senderId === recipientId
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const repliedMessage = messages.find(m => m.id === message.replyTo?.id);
+                            if (repliedMessage && messageRefs.current[repliedMessage.id]) {
+                              messageRefs.current[repliedMessage.id]?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                              });
+                              messageRefs.current[repliedMessage.id]?.classList.add('highlight-message');
+                              setTimeout(() => {
+                                messageRefs.current[repliedMessage.id]?.classList.remove('highlight-message');
+                              }, 2000);
+                            }
+                          }}
+                        >
+                          <p className={`font-medium text-xs mb-0.5 ${
+                            message.senderId === recipientId
                                 ? 'text-primary'
                                 : 'text-primary-foreground'
-                            }`}>
-                              {message.replyTo.senderId === user?.id ? 'You' : recipientName || recipientUsername}
-                            </p>
-                            <p className={`text-xs line-clamp-2 ${
-                              message.senderId === recipientId
+                          }`}>
+                            {message.replyTo.senderId === user?.id ? 'You' : recipientName || recipientUsername}
+                          </p>
+                          <p className={`text-xs line-clamp-2 ${
+                            message.senderId === recipientId
                                 ? 'text-muted-foreground'
                                 : 'text-primary-foreground/90'
-                            }`}>
-                              {message.replyTo.content}
-                            </p>
+                          }`}>
+                            {message.replyTo.content}
+                          </p>
                           </motion.div>
-                        )}
+                      )}
                         <div className="break-all whitespace-pre-wrap message-content">
                           <p className="text-sm leading-relaxed">
                             {getMessagePreview(message.content, message.id)}
@@ -761,10 +761,10 @@ export default function ChatInterface({
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleMessageExpansion(message.id);
-                              }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleMessageExpansion(message.id);
+                            }}
                               className={`text-xs mt-1 flex items-center gap-1 ${
                                 message.senderId === recipientId
                                   ? 'text-primary hover:text-primary/80'
@@ -800,45 +800,45 @@ export default function ChatInterface({
                           )}
                         </div>
 
-                        {selectedMessageId === message.id && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className={`absolute ${
-                              message.senderId === recipientId
-                                ? 'right-0 top-0'
-                                : 'left-0 top-0'
+                      {selectedMessageId === message.id && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className={`absolute ${
+                            message.senderId === recipientId
+                              ? 'right-0 top-0'
+                              : 'left-0 top-0'
                             } mt-[-40px] glass-effect rounded-lg shadow-lg py-1 min-w-[140px] z-50`}
-                          >
+                        >
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleReply(message);
-                              }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReply(message);
+                            }}
                               className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors flex items-center gap-2"
-                            >
-                              <MessageSquare className="w-4 h-4" />
-                              Reply
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                            Reply
                             </motion.button>
-                            {message.senderId === user?.id && (
+                          {message.senderId === user?.id && (
                               <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteMessage(message.id);
-                                }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteMessage(message.id);
+                              }}
                                 className="w-full px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors flex items-center gap-2"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                                Delete
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete
                               </motion.button>
-                            )}
-                          </motion.div>
-                        )}
+                          )}
+                        </motion.div>
+                      )}
                       </motion.div>
                     </motion.div>
                   ))}
@@ -847,11 +847,11 @@ export default function ChatInterface({
               </div>
             )}
           </div>
-        </div>
+      </div>
 
-        {/* Input Area */}
+      {/* Input Area */}
         <div className="border-t border-border/50 dark:border-gray-800/50 p-4 flex-none bg-background/80 dark:bg-[#1f2937]/80 backdrop-blur-xl z-20">
-          {replyingTo && (
+        {replyingTo && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -859,29 +859,29 @@ export default function ChatInterface({
               className="flex items-start gap-2 mb-2 p-2 bg-primary/5 dark:bg-primary/10 rounded-lg gradient-border"
             >
               <div className="flex-shrink-0 w-1 self-stretch bg-primary/40 rounded-full"></div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
                   <p className="text-sm font-medium text-primary">
-                    Replying to {replyingTo.senderId === user?.id ? 'yourself' : recipientName || recipientUsername}
-                  </p>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={cancelReply}
-                    className="text-muted-foreground hover:text-foreground transition-colors -mr-1"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-1">
-                  {replyingTo.content}
+                  Replying to {replyingTo.senderId === user?.id ? 'yourself' : recipientName || recipientUsername}
                 </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={cancelReply}
+                    className="text-muted-foreground hover:text-foreground transition-colors -mr-1"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
+                <p className="text-sm text-muted-foreground line-clamp-1">
+                {replyingTo.content}
+              </p>
+            </div>
             </motion.div>
-          )}
-          <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-            <div className="relative">
+        )}
+        <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+          <div className="relative">
               <motion.button
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.9 }}
@@ -889,17 +889,17 @@ export default function ChatInterface({
                 onClick={() => setShowAttachmentOptions(!showAttachmentOptions)}
                 className="button-glow"
               >
-                <Button
-                  variant="ghost"
-                  size="icon"
+            <Button
+              variant="ghost"
+              size="icon"
                   className="text-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
-                >
-                  <Smile className="h-5 w-5" />
-                </Button>
+            >
+              <Smile className="h-5 w-5" />
+            </Button>
               </motion.button>
-              <AnimatePresence>
-                {showAttachmentOptions && (
-                  <motion.div
+            <AnimatePresence>
+              {showAttachmentOptions && (
+                <motion.div
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -923,32 +923,32 @@ export default function ChatInterface({
                         <span className="text-xs text-foreground">{label}</span>
                       </motion.button>
                     ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
               className="flex-1 bg-background/50 dark:bg-[#111827]/50 rounded-full px-4 py-2 focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 border-border/50 dark:border-gray-800/50 shadow-sm text-foreground placeholder:text-muted-foreground"
-            />
+          />
             <motion.button
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.9 }}
-              type="submit"
-              disabled={isSending || !newMessage.trim()}
+            type="submit" 
+            disabled={isSending || !newMessage.trim()}
               className="button-glow bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              {isSending ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Send className="h-5 w-5" />
-              )}
+          >
+            {isSending ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
             </motion.button>
-          </form>
-        </div>
-      </Card>
+        </form>
+      </div>
+    </Card>
     </motion.div>
   );
 }

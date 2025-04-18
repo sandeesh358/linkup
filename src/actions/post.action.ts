@@ -389,6 +389,44 @@ export async function createComment(postId: string, content: string) {
   }
 }
 
+export async function deleteComment(commentId: string) {
+  try {
+    const userId = await getDbUserId();
+    if (!userId) throw new Error("User not found");
+
+    // Get the comment and check permissions
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      select: {
+        authorId: true,
+        post: {
+          select: {
+            authorId: true,
+          },
+        },
+      },
+    });
+
+    if (!comment) throw new Error("Comment not found");
+
+    // Check if user is either the comment author or post author
+    if (userId !== comment.authorId && userId !== comment.post.authorId) {
+      throw new Error("Unauthorized - no delete permission");
+    }
+
+    // Delete the comment
+    await prisma.comment.delete({
+      where: { id: commentId },
+    });
+
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete comment:", error);
+    return { success: false, error: "Failed to delete comment" };
+  }
+}
+
 async function deleteFileFromUploadThing(url: string) {
   try {
     // Extract the file key from the URL

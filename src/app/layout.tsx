@@ -23,6 +23,28 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "LinkUp",
   description: "A modern social media application powered by Next.js",
+  icons: {
+    icon: [
+      {
+        url: '/favicon.svg',
+        type: 'image/svg+xml',
+      }
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'LinkUp',
+    description: 'A modern social media application powered by Next.js',
+    images: [
+      {
+        url: '/logo-light.svg',
+        width: 200,
+        height: 200,
+        alt: 'LinkUp Logo',
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
