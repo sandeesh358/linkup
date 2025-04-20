@@ -122,7 +122,8 @@ function CreatePost() {
         className={cn(
           isCreatePostPage 
             ? 'min-h-full rounded-none border-0 lg:min-h-0 lg:rounded-xl lg:border lg:shadow-lg' 
-            : 'mb-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200'
+            : 'mb-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200',
+          'bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-900/30'
         )}
       >
         <CardContent className={cn(
@@ -141,9 +142,9 @@ function CreatePost() {
                   'transition-transform duration-200'
                 )}
               >
-                <Avatar className="w-10 h-10 ring-2 ring-offset-2 ring-primary/20">
+                <Avatar className="w-10 h-10 ring-2 ring-primary/20 dark:ring-primary/40">
                   <AvatarImage src={dbUser?.image || user?.imageUrl || "/avatar.png"} alt={dbUser?.name || user?.fullName || "User"} />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
                     {dbUser?.name?.[0] || user?.fullName?.[0] || "U"}
                   </AvatarFallback>
                 </Avatar>
@@ -157,16 +158,17 @@ function CreatePost() {
                 <Textarea
                   placeholder="What's on your mind?"
                   className={cn(
-                    'min-h-[100px] resize-none border-none focus-visible:ring-0 p-0 text-base lg:text-lg placeholder:text-muted-foreground/50',
+                    'min-h-[100px] resize-none border-none focus-visible:ring-0 p-0 text-base lg:text-lg',
                     isCreatePostPage 
                       ? 'h-[calc(100vh-250px)] lg:h-[300px]' 
                       : '',
                     isFocused
                       ? 'placeholder:text-primary/40'
-                      : '',
+                      : 'placeholder:text-muted-foreground/50',
                     (showImageUpload || showVideoUpload) && isCreatePostPage
                       ? 'h-[calc(100vh-400px)]'
-                      : ''
+                      : '',
+                    'bg-transparent'
                   )}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
@@ -185,8 +187,9 @@ function CreatePost() {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                   className={cn(
-                    "border rounded-xl p-4 overflow-hidden bg-muted/50",
-                    isCreatePostPage ? 'mb-4' : ''
+                    "border rounded-xl p-4 overflow-hidden",
+                    isCreatePostPage ? 'mb-4' : '',
+                    'bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/50 dark:to-purple-950/50'
                   )}
                 >
                   <ImageUpload
@@ -207,8 +210,9 @@ function CreatePost() {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                   className={cn(
-                    "border rounded-xl p-4 overflow-hidden bg-muted/50",
-                    isCreatePostPage ? 'mb-4' : ''
+                    "border rounded-xl p-4 overflow-hidden",
+                    isCreatePostPage ? 'mb-4' : '',
+                    'bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/50 dark:to-purple-950/50'
                   )}
                 >
                   <VideoUpload
@@ -242,8 +246,8 @@ function CreatePost() {
                 className={cn(
                   "text-muted-foreground transition-all duration-200",
                   showImageUpload 
-                    ? 'bg-primary/10 text-primary hover:bg-primary/20' 
-                    : 'hover:text-primary hover:bg-primary/10'
+                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20' 
+                    : 'hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10'
                 )}
                 onClick={() => {
                   setShowImageUpload(!showImageUpload);
@@ -279,8 +283,8 @@ function CreatePost() {
                 className={cn(
                   "text-muted-foreground transition-all duration-200",
                   showVideoUpload 
-                    ? 'bg-primary/10 text-primary hover:bg-primary/20' 
-                    : 'hover:text-primary hover:bg-primary/10'
+                    ? 'bg-purple-500/10 text-purple-600 dark:text-purple-300 hover:bg-purple-500/20' 
+                    : 'hover:text-purple-600 dark:hover:text-purple-300 hover:bg-purple-500/10'
                 )}
                 onClick={() => {
                   setShowVideoUpload(!showVideoUpload);
@@ -313,7 +317,7 @@ function CreatePost() {
             <Button
               type="button"
               size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 dark:from-blue-400 dark:to-purple-400 dark:hover:from-blue-500 dark:hover:to-purple-500"
               onClick={handleSubmit}
               disabled={isPosting || (!content.trim() && !imageUrl && !videoUrl)}
             >

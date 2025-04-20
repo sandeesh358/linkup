@@ -321,79 +321,127 @@ function analyzeTextContent(text: string): {
   return { type, context, emojis };
 }
 
+// Type definitions for context mappings
+type SceneCategory = {
+  [key: string]: string[];
+};
+
+type ContextMapping = {
+  [key: string]: string[];
+};
+
+// Enhanced scene classification mapping
+const sceneCategories: SceneCategory = {
+  indoor: ["living room", "kitchen", "bedroom", "office", "restaurant", "cafe", "gym"],
+  outdoor: ["beach", "mountain", "forest", "park", "street", "city", "garden"],
+  urban: ["cityscape", "street", "building", "downtown", "market", "subway"],
+  nature: ["landscape", "wildlife", "ocean", "sunset", "sunrise", "waterfall"],
+  social: ["party", "gathering", "event", "concert", "wedding", "celebration"],
+  sports: ["game", "match", "competition", "training", "fitness", "exercise"],
+  travel: ["vacation", "adventure", "exploration", "tourist", "landmark"],
+  food: ["meal", "cuisine", "restaurant", "cooking", "baking", "recipe"],
+  art: ["painting", "sculpture", "exhibition", "gallery", "design", "creative"],
+  technology: ["gadget", "device", "innovation", "digital", "computer", "tech"]
+};
+
+// Enhanced time of day mapping
+const timeContext: ContextMapping = {
+  morning: ["dawn", "sunrise", "early", "fresh", "new day"],
+  day: ["bright", "sunny", "clear", "lively", "active"],
+  evening: ["sunset", "dusk", "golden hour", "twilight", "magic hour"],
+  night: ["nighttime", "dark", "moonlit", "starry", "nocturnal"]
+};
+
+// Enhanced weather mapping
+const weatherContext: ContextMapping = {
+  sunny: ["bright", "clear", "sunny", "radiant", "shining"],
+  cloudy: ["overcast", "cloudy", "gloomy", "dull", "gray"],
+  rainy: ["wet", "rainy", "drizzly", "pouring", "stormy"],
+  snowy: ["snowy", "frosty", "wintry", "icy", "cold"],
+  foggy: ["misty", "foggy", "hazy", "murky", "obscured"]
+};
+
+// Enhanced season mapping
+const seasonContext: ContextMapping = {
+  spring: ["blooming", "fresh", "renewal", "growth", "awakening"],
+  summer: ["hot", "sunny", "vibrant", "lively", "outdoor"],
+  autumn: ["fall", "colorful", "crisp", "harvest", "transition"],
+  winter: ["cold", "snowy", "frosty", "cozy", "festive"]
+};
+
 // Enhanced caption templates for different contexts
 const imageCaptionTemplates: Record<ImageContext, string[]> = {
   nature: [
-    "Capturing the breathtaking beauty of {description} {emoji1} {emoji2}",
-    "Nature's masterpiece: {description} {emoji1} {emoji2}",
-    "In awe of {description} {emoji1} {emoji2}",
-    "Mother Nature at her finest: {description} {emoji1} {emoji2}",
-    "A moment of serenity with {description} {emoji1} {emoji2}",
-    "The natural world never ceases to amaze: {description} {emoji1} {emoji2}"
+    "Lost in the beauty of {description} ✨",
+    "Nature's masterpiece: {description} 🌿",
+    "A moment of peace with {description} 🌸",
+    "The magic of {description} captured in a frame 📸",
+    "Where the soul meets {description} 💫",
+    "Nature's poetry: {description} 🌺"
   ],
   urban: [
-    "City vibes: {description} {emoji1} {emoji2}",
-    "Urban exploration: {description} {emoji1} {emoji2}",
-    "City life captured: {description} {emoji1} {emoji2}",
-    "Metropolitan moments: {description} {emoji1} {emoji2}",
-    "The heartbeat of the city: {description} {emoji1} {emoji2}",
-    "Urban landscape showcasing {description} {emoji1} {emoji2}"
+    "City vibes: {description} 🏙️",
+    "Urban stories: {description} 🌆",
+    "The rhythm of the city: {description} 🎵",
+    "Where dreams meet reality: {description} ✨",
+    "City lights, endless nights: {description} 🌃",
+    "Urban adventures: {description} 🚶‍♂️"
   ],
   people: [
-    "Capturing precious moments: {description} {emoji1} {emoji2}",
-    "Life's beautiful moments: {description} {emoji1} {emoji2}",
-    "Memories in the making: {description} {emoji1} {emoji2}",
-    "Special moments: {description} {emoji1} {emoji2}",
-    "The human connection: {description} {emoji1} {emoji2}",
-    "Stories told through {description} {emoji1} {emoji2}"
+    "Precious moments: {description} 💖",
+    "Memories in the making: {description} 📸",
+    "Life's beautiful chapters: {description} 📖",
+    "The art of being human: {description} 🎨",
+    "Stories untold: {description} ✨",
+    "Capturing emotions: {description} 💫"
   ],
   food: [
-    "Culinary delights: {description} {emoji1} {emoji2}",
-    "Foodie moments: {description} {emoji1} {emoji2}",
-    "Taste of perfection: {description} {emoji1} {emoji2}",
-    "Delicious discoveries: {description} {emoji1} {emoji2}",
-    "A feast for the eyes: {description} {emoji1} {emoji2}",
-    "Gastronomic excellence: {description} {emoji1} {emoji2}"
+    "Culinary magic: {description} 🍽️",
+    "Taste of happiness: {description} 😋",
+    "Foodie adventures: {description} 🍜",
+    "Where flavors meet memories: {description} 🍲",
+    "A feast for the senses: {description} 🍛",
+    "Cooking up memories: {description} 👨‍🍳"
   ],
   art: [
-    "Artistic vision: {description} {emoji1} {emoji2}",
-    "Creative expression: {description} {emoji1} {emoji2}",
-    "Art in focus: {description} {emoji1} {emoji2}",
-    "Visual storytelling: {description} {emoji1} {emoji2}",
-    "A masterpiece revealing {description} {emoji1} {emoji2}",
-    "The artist's perspective: {description} {emoji1} {emoji2}"
+    "Creative soul: {description} 🎨",
+    "Art speaks where words fail: {description} ✨",
+    "The beauty of expression: {description} 💫",
+    "Where imagination meets reality: {description} 🌟",
+    "Artistic journey: {description} 🖌️",
+    "Colors of emotion: {description} 🎭"
   ],
   sports: [
-    "Action captured: {description} {emoji1} {emoji2}",
-    "Sports moments: {description} {emoji1} {emoji2}",
-    "Game on: {description} {emoji1} {emoji2}",
-    "Athletic excellence: {description} {emoji1} {emoji2}",
-    "The thrill of competition: {description} {emoji1} {emoji2}",
-    "Championship moments: {description} {emoji1} {emoji2}"
+    "Game on: {description} ⚽",
+    "Chasing dreams: {description} 🏃‍♂️",
+    "The thrill of victory: {description} 🏆",
+    "Where passion meets performance: {description} 💪",
+    "Sportsmanship in action: {description} 🤝",
+    "The spirit of competition: {description} 🎯"
   ],
   travel: [
-    "Adventure awaits: {description} {emoji1} {emoji2}",
-    "Wanderlust moments: {description} {emoji1} {emoji2}",
-    "Exploring: {description} {emoji1} {emoji2}",
-    "Travel tales: {description} {emoji1} {emoji2}",
-    "Journey to discovery: {description} {emoji1} {emoji2}",
-    "Destination unknown: {description} {emoji1} {emoji2}"
+    "Wanderlust: {description} ✈️",
+    "Exploring the unknown: {description} 🌍",
+    "Journey of a lifetime: {description} 🗺️",
+    "Where adventure begins: {description} 🏔️",
+    "Travel tales: {description} 📸",
+    "Discovering new horizons: {description} 🌅"
   ],
   technology: [
-    "Tech innovation: {description} {emoji1} {emoji2}",
-    "Digital world: {description} {emoji1} {emoji2}",
-    "Future is now: {description} {emoji1} {emoji2}",
-    "Tech spotlight: {description} {emoji1} {emoji2}",
-    "Cutting-edge technology: {description} {emoji1} {emoji2}",
-    "Innovation at its finest: {description} {emoji1} {emoji2}"
+    "Future is now: {description} 💻",
+    "Innovation in focus: {description} 💡",
+    "Tech dreams: {description} 🚀",
+    "Digital wonders: {description} 🌐",
+    "The power of technology: {description} ⚡",
+    "Where ideas meet reality: {description} 💫"
   ],
   default: [
-    "Capturing the moment: {description} {emoji1} {emoji2}",
-    "Picture perfect: {description} {emoji1} {emoji2}",
-    "In focus: {description} {emoji1} {emoji2}",
-    "Frame worthy: {description} {emoji1} {emoji2}",
-    "A snapshot of {description} {emoji1} {emoji2}",
-    "Through the lens: {description} {emoji1} {emoji2}"
+    "Capturing moments: {description} 📸",
+    "Life through my lens: {description} ✨",
+    "A story in every frame: {description} 🎥",
+    "Where memories live: {description} 💫",
+    "The art of seeing: {description} 👁️",
+    "Moments that matter: {description} ⭐"
   ]
 };
 
@@ -429,85 +477,236 @@ function detectImageContext(caption: string): ImageContext {
   return 'default';
 }
 
+// Enhanced function to analyze image context
+function analyzeImageContext(caption: string, objects: any[], faces: any[]): {
+  scene: string;
+  mood: string;
+  time: string;
+  weather: string;
+  season: string;
+  dominantColors: string[];
+  emotions: string[];
+} {
+  const lowerCaption = caption.toLowerCase();
+  let context = {
+    scene: 'general',
+    mood: 'neutral',
+    time: 'day',
+    weather: 'clear',
+    season: 'summer',
+    dominantColors: [] as string[],
+    emotions: [] as string[]
+  };
+
+  // Scene detection
+  for (const [category, keywords] of Object.entries(sceneCategories)) {
+    if (keywords.some((keyword: string) => lowerCaption.includes(keyword))) {
+      context.scene = category;
+      break;
+    }
+  }
+
+  // Emotion detection from faces
+  if (faces && faces.length > 0) {
+    const faceEmotions = faces.map(face => face.emotion || 'neutral');
+    context.emotions = Array.from(new Set(faceEmotions));
+  }
+
+  // Time of day detection
+  for (const [time, keywords] of Object.entries(timeContext)) {
+    if (keywords.some((keyword: string) => lowerCaption.includes(keyword))) {
+      context.time = time;
+      break;
+    }
+  }
+
+  // Weather detection
+  for (const [weather, keywords] of Object.entries(weatherContext)) {
+    if (keywords.some((keyword: string) => lowerCaption.includes(keyword))) {
+      context.weather = weather;
+      break;
+    }
+  }
+
+  // Season detection
+  for (const [season, keywords] of Object.entries(seasonContext)) {
+    if (keywords.some((keyword: string) => lowerCaption.includes(keyword))) {
+      context.season = season;
+      break;
+    }
+  }
+
+  // Color analysis
+  if (objects && objects.length > 0) {
+    const colorKeywords = objects
+      .filter(obj => obj.color)
+      .map(obj => obj.color.toLowerCase());
+    context.dominantColors = Array.from(new Set(colorKeywords));
+  }
+
+  return context;
+}
+
 // Enhanced function to create engaging caption
-function createEngagingCaption(baseCaption: string, figure: any): string {
+function createEngagingCaption(baseCaption: string, context: {
+  scene: string;
+  mood: string;
+  time: string;
+  weather: string;
+  season: string;
+  dominantColors: string[];
+  emotions: string[];
+}, figure: any): string {
   // If it's a historical figure, use the historical caption logic
   if (figure) {
     return createHistoricalCaption(baseCaption, figure);
   }
 
-  // Detect image context
-  const context = detectImageContext(baseCaption);
-  
-  // Get relevant templates
-  const templates = imageCaptionTemplates[context];
-    const template = templates[Math.floor(Math.random() * templates.length)];
-    
-  // Get relevant emojis
-    const emojis: string[] = [];
   const lowerCaption = baseCaption.toLowerCase();
-    
-  // Add context-specific emojis
-    for (const [keyword, emoji] of Object.entries(emojiMap)) {
-    if (lowerCaption.includes(keyword)) {
-        emojis.push(emoji);
-      }
+
+  // Get relevant templates based on context
+  const templates = imageCaptionTemplates[context.scene as ImageContext] || imageCaptionTemplates.default;
+  const template = templates[Math.floor(Math.random() * templates.length)];
+  
+  // Get relevant emojis based on context
+  const emojis: string[] = [];
+  
+  // Add scene-specific emojis
+  switch (context.scene) {
+    case 'nature':
+      emojis.push('🌿', '🌳', '🌸', '🌺', '🌊');
+      break;
+    case 'urban':
+      emojis.push('🏙️', '🌆', '🏢', '🚶‍♂️', '🌃');
+      break;
+    case 'social':
+      emojis.push('👥', '🎉', '✨', '💫', '🌟');
+      break;
+    case 'sports':
+      emojis.push('⚽', '🏆', '💪', '🏃‍♂️', '🎯');
+      break;
+    case 'travel':
+      emojis.push('✈️', '🗺️', '🌍', '🏔️', '🌅');
+      break;
+    case 'food':
+      emojis.push('🍽️', '✨', '😋', '🍜', '🍲');
+      break;
+    case 'art':
+      emojis.push('🎨', '✨', '💫', '🎭', '🖌️');
+      break;
+    case 'technology':
+      emojis.push('💻', '💡', '🚀', '⚡', '🌐');
+      break;
+    default:
+      emojis.push('📸', '✨', '💫', '🌟', '⭐');
+  }
+
+  // Add emotion-specific emojis
+  if (context.emotions.length > 0) {
+    const emotion = context.emotions[0];
+    switch (emotion) {
+      case 'happy':
+        emojis.push('😊', '😄', '😃', '😁', '😆');
+        break;
+      case 'sad':
+        emojis.push('😢', '💔', '😔', '😞', '😭');
+        break;
+      case 'surprised':
+        emojis.push('😮', '😲', '😳', '🤯', '😱');
+        break;
+      case 'angry':
+        emojis.push('😠', '💢', '😡', '🤬', '👿');
+        break;
+      case 'fearful':
+        emojis.push('😨', '😱', '😰', '😥', '😓');
+        break;
+      case 'disgusted':
+        emojis.push('🤢', '🤮', '😷', '🤧', '🤒');
+        break;
+      case 'neutral':
+        emojis.push('😐', '🙂', '😶', '😑', '😌');
+        break;
     }
-    
-    // Add default context emojis if none were found
-    if (emojis.length === 0) {
-    switch (context) {
-      case 'nature':
-        emojis.push('🌿', '🌳');
-        break;
-      case 'urban':
-        emojis.push('🏙️', '🌆');
-        break;
-      case 'people':
-        emojis.push('👥', '✨');
-        break;
-      case 'food':
-        emojis.push('🍽️', '✨');
-        break;
-      case 'art':
-        emojis.push('🎨', '✨');
-        break;
-      case 'sports':
-        emojis.push('⚽', '🏆');
-        break;
-      case 'travel':
-        emojis.push('✈️', '🗺️');
-        break;
-      case 'technology':
-        emojis.push('💻', '💡');
-        break;
-      default:
-        emojis.push('📸', '✨');
-    }
-    }
-    
-    // Limit to max 2 most relevant emojis
-    const uniqueEmojis = Array.from(new Set(emojis)).slice(0, 2);
-    
-  // Enhance the caption with more details
+  }
+
+  // Add time-specific emojis
+  switch (context.time) {
+    case 'morning':
+      emojis.push('🌅', '☀️', '🌄', '🌞', '🌤️');
+      break;
+    case 'day':
+      emojis.push('☀️', '🌤️', '🌞', '🌅', '🌄');
+      break;
+    case 'evening':
+      emojis.push('🌆', '🌅', '🌇', '🌃', '🌉');
+      break;
+    case 'night':
+      emojis.push('🌙', '✨', '🌃', '🌠', '🌌');
+      break;
+  }
+
+  // Add weather-specific emojis
+  switch (context.weather) {
+    case 'sunny':
+      emojis.push('☀️', '🌤️', '🌞', '🌅', '🌄');
+      break;
+    case 'cloudy':
+      emojis.push('☁️', '⛅', '🌥️', '🌦️', '🌤️');
+      break;
+    case 'rainy':
+      emojis.push('🌧️', '☔', '⛈️', '🌦️', '🌂');
+      break;
+    case 'snowy':
+      emojis.push('❄️', '⛄', '🌨️', '☃️', '🏂');
+      break;
+    case 'foggy':
+      emojis.push('🌫️', '☁️', '🌁', '🌫️', '🌫️');
+      break;
+  }
+
+  // Add season-specific emojis
+  switch (context.season) {
+    case 'spring':
+      emojis.push('🌸', '🌱', '🌷', '🌺', '🌼');
+      break;
+    case 'summer':
+      emojis.push('☀️', '🌊', '🏖️', '🌞', '🍉');
+      break;
+    case 'autumn':
+      emojis.push('🍂', '🍁', '🌾', '🍃', '🍁');
+      break;
+    case 'winter':
+      emojis.push('❄️', '⛄', '☃️', '🌨️', '🎿');
+      break;
+  }
+
+  // Get unique emojis and limit to 3
+  const uniqueEmojis = Array.from(new Set(emojis)).slice(0, 3);
+
+  // Enhance the caption with context
   let enhancedCaption = baseCaption;
   
-  // Add descriptive adjectives based on context
-  if (context === 'nature' && !lowerCaption.includes('beautiful') && !lowerCaption.includes('stunning')) {
-    enhancedCaption = `the beautiful ${enhancedCaption}`;
-  } else if (context === 'food' && !lowerCaption.includes('delicious') && !lowerCaption.includes('tasty')) {
-    enhancedCaption = `the delicious ${enhancedCaption}`;
-  } else if (context === 'people' && !lowerCaption.includes('happy') && !lowerCaption.includes('smiling')) {
-    enhancedCaption = `the happy ${enhancedCaption}`;
-  } else if (context === 'urban' && !lowerCaption.includes('busy') && !lowerCaption.includes('vibrant')) {
-    enhancedCaption = `the vibrant ${enhancedCaption}`;
+  // Add time context if not already present
+  if (!lowerCaption.includes(context.time)) {
+    enhancedCaption = `${context.time} ${enhancedCaption}`;
   }
   
+  // Add weather context if not already present
+  if (!lowerCaption.includes(context.weather)) {
+    enhancedCaption = `${context.weather} ${enhancedCaption}`;
+  }
+  
+  // Add season context if not already present
+  if (!lowerCaption.includes(context.season)) {
+    enhancedCaption = `${context.season} ${enhancedCaption}`;
+  }
+
   // Fill template
   return template
     .replace('{description}', enhancedCaption)
     .replace('{emoji1}', uniqueEmojis[0] || '✨')
-    .replace('{emoji2}', uniqueEmojis[1] || '📸');
+    .replace('{emoji2}', uniqueEmojis[1] || '📸')
+    .replace('{emoji3}', uniqueEmojis[2] || '💫');
 }
 
 // Historical caption creation function
@@ -581,16 +780,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Image URL is required" }, { status: 400 });
     }
 
-    console.log("Processing image URL:", imageUrl);
-
     const azureKey = process.env.AZURE_VISION_KEY;
     const azureEndpoint = process.env.AZURE_VISION_ENDPOINT;
 
     if (!azureKey || !azureEndpoint) {
-      console.error("Azure Vision configuration missing:", { 
-        hasKey: !!azureKey, 
-        hasEndpoint: !!azureEndpoint 
-      });
       return NextResponse.json({ error: "Azure Vision configuration missing" }, { status: 500 });
     }
 
@@ -600,83 +793,61 @@ export async function POST(req: NextRequest) {
       azureEndpoint
     );
 
-    console.log("Calling Azure Vision API...");
-
-    // Generate caption using Azure Computer Vision with increased maxCandidates
-    const result = await computerVisionClient.describeImage(imageUrl, {
-      language: "en",
-      maxCandidates: 5, // Increased from 3 to 5 for better caption selection
-    });
-
-    console.log("Azure Vision API response:", JSON.stringify(result, null, 2));
+    // Enhanced image analysis with only supported features
+    const [result, objects, faces] = await Promise.all([
+      computerVisionClient.describeImage(imageUrl, {
+        language: "en",
+        maxCandidates: 5,
+      }),
+      computerVisionClient.analyzeImage(imageUrl, {
+        visualFeatures: ["Objects", "Color", "Description", "Tags"],
+      }),
+      computerVisionClient.analyzeImage(imageUrl, {
+        visualFeatures: ["Faces"],
+      }),
+    ]);
 
     if (!result.captions || result.captions.length === 0) {
-      console.error("No captions returned from Azure Vision API");
       return NextResponse.json({ error: "No caption generated" }, { status: 500 });
     }
 
-    // Get the caption with highest confidence
+    // Get the best caption
     const bestCaption = result.captions.reduce((prev, current) => {
-      const prevConfidence = prev.confidence || 0;
-      const currentConfidence = current.confidence || 0;
-      return prevConfidence > currentConfidence ? prev : current;
+      return (prev.confidence || 0) > (current.confidence || 0) ? prev : current;
     });
 
+    // Ensure bestCaption.text exists
     if (!bestCaption.text) {
-      console.error("Invalid caption text in best caption");
       return NextResponse.json({ error: "Invalid caption text" }, { status: 500 });
     }
 
-    // Get additional details from other captions to enhance the description
-    let enhancedDescription = bestCaption.text;
-    
-    // If we have multiple captions, combine details from them
-    if (result.captions.length > 1) {
-      // Sort captions by confidence
-      const sortedCaptions = [...result.captions].sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
-      
-      // Get unique details from other captions
-      const uniqueDetails = new Set<string>();
-      
-      // Skip the best caption as we already have it
-      for (let i = 1; i < Math.min(3, sortedCaptions.length); i++) {
-        const caption = sortedCaptions[i];
-        if (caption.text && caption.confidence && caption.confidence > 0.5) {
-          // Extract nouns and adjectives that might add detail
-          const words = caption.text.split(' ');
-          for (const word of words) {
-            // Skip common words and words already in the best caption
-            if (word.length > 4 && 
-                !enhancedDescription.toLowerCase().includes(word.toLowerCase()) &&
-                !['the', 'and', 'with', 'that', 'this', 'from', 'have', 'what', 'some', 'there'].includes(word.toLowerCase())) {
-              uniqueDetails.add(word);
-            }
-          }
-        }
-      }
-      
-      // Add unique details to the description if we found any
-      if (uniqueDetails.size > 0) {
-        const detailsArray = Array.from(uniqueDetails).slice(0, 3);
-        enhancedDescription += `, featuring ${detailsArray.join(', ')}`;
-      }
-    }
+    // Analyze image context
+    const context = analyzeImageContext(
+      bestCaption.text,
+      objects.objects || [],
+      faces.faces || []
+    );
 
     // Check if the image is of a historical figure
-    const historicalFigure = identifyHistoricalFigure(enhancedDescription);
+    const historicalFigure = identifyHistoricalFigure(bestCaption.text);
     
     // Create engaging caption with enhanced context awareness
-    const finalCaption = createEngagingCaption(enhancedDescription, historicalFigure);
-    console.log("Final caption:", finalCaption);
+    const finalCaption = createEngagingCaption(bestCaption.text, context, historicalFigure);
 
-    return NextResponse.json({ caption: finalCaption });
+    return NextResponse.json({ 
+      caption: finalCaption,
+      context: {
+        scene: context.scene,
+        mood: context.mood,
+        time: context.time,
+        weather: context.weather,
+        season: context.season,
+        dominantColors: context.dominantColors,
+        emotions: context.emotions
+      }
+    });
   } catch (error) {
     console.error("Azure Vision API Error:", error);
-    
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    
     return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
   }
 }

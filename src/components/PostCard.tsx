@@ -6,13 +6,17 @@ import { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Card, CardContent } from "./ui/card";
 import Link from "next/link";
-import { Avatar, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { DeleteAlertDialog } from "./DeleteAlertDialog";
 import { Button } from "./ui/button";
 import { HeartIcon, LogInIcon, MessageCircleIcon, SendIcon, PlayIcon, PauseIcon, Volume2Icon, VolumeXIcon, Loader2Icon, Trash2Icon } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 import { useVideo } from "@/context/VideoContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { getUserByClerkId } from "@/actions/user.action";
+import { usePathname } from "next/navigation";
 
 export interface Author {
   id: string;
@@ -76,11 +80,12 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [hasLiked, setHasLiked] = useState(post.likes.some((like) => like.userId === dbUserId));
-  const [optimisticLikes, setOptmisticLikes] = useState(post._count?.likes || post.likes?.length || 0);
+  const [optimisticLikes, setOptimisticLikes] = useState(post._count?.likes || post.likes?.length || 0);
   const [showComments, setShowComments] = useState(false);
   const [optimisticComments, setOptimisticComments] = useState<Comment[]>(post.comments);
   const [optimisticCommentCount, setOptimisticCommentCount] = useState(post._count.comments);
   const [isDeletingComment, setIsDeletingComment] = useState<string | null>(null);
+  const postRef = useRef<HTMLDivElement>(null);
 
   // Handle video playback
   const handlePlayPause = () => {
@@ -178,12 +183,23 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
     if (isLiking) return;
     try {
       setIsLiking(true);
-      setHasLiked((prev: boolean) => !prev);
-      setOptmisticLikes((prev: number) => prev + (hasLiked ? -1 : 1));
-      await toggleLike(post.id);
+      const newLikeState = !hasLiked;
+      setHasLiked(newLikeState);
+      setOptimisticLikes(prev => prev + (newLikeState ? 1 : -1));
+      
+      const result = await toggleLike(post.id);
+      if (!result?.success) {
+        // Revert optimistic updates if the server request fails
+        setHasLiked(!newLikeState);
+        setOptimisticLikes(prev => prev + (newLikeState ? -1 : 1));
+        toast.error("Failed to update like");
+      }
     } catch (error) {
-      setOptmisticLikes(post.likes.length);
-      setHasLiked(post.likes.some((like) => like.userId === dbUserId));
+      // Revert optimistic updates on error
+      setHasLiked(!hasLiked);
+      setOptimisticLikes(prev => prev + (hasLiked ? 1 : -1));
+      toast.error("Failed to update like");
+    } finally {
       setIsLiking(false);
     }
   };
@@ -299,214 +315,270 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
     }
   };
 
+  // Close comments when post is not in view
+  useEffect(() => {
+    if (!postRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting && showComments) {
+            setShowComments(false);
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: "-64px 0px 0px 0px",
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(postRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [showComments]);
+
   return (
-    <Card className="overflow-hidden max-w-2xl mx-auto">
-      <CardContent className="p-4 sm:p-6">
-        <div className="space-y-4">
-          <div className="flex space-x-3 sm:space-x-4">
-            <Link href={`/profile/${post.author.username}`}>
-              <Avatar className="size-8 sm:w-10 sm:h-10">
-                <AvatarImage src={post.author.image ?? "/avatar.png"} />
-              </Avatar>
-            </Link>
+    <motion.div
+      ref={postRef}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card className="overflow-hidden max-w-2xl mx-auto bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-900/30">
+        <CardContent className="p-4 sm:p-6">
+          <div className="space-y-4">
+            <div className="flex space-x-3 sm:space-x-4">
+              <Link href={`/profile/${post.author.username}`}>
+                <Avatar className="size-8 sm:w-10 sm:h-10 ring-2 ring-primary/20 dark:ring-primary/40">
+                  <AvatarImage src={post.author.image ?? "/avatar.png"} />
+                </Avatar>
+              </Link>
 
-            {/* POST HEADER & TEXT CONTENT */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 truncate">
-                  <Link
-                    href={`/profile/${post.author.username}`}
-                    className="font-semibold truncate"
-                  >
-                    {post.author.name}
-                  </Link>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <Link href={`/profile/${post.author.username}`}>@{post.author.username}</Link>
-                    <span>•</span>
-                    <span>{formatDistanceToNow(new Date(post.createdAt))} ago</span>
+              {/* POST HEADER & TEXT CONTENT */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 truncate">
+                    <Link
+                      href={`/profile/${post.author.username}`}
+                      className="font-semibold truncate text-blue-600 dark:text-blue-400"
+                    >
+                      {post.author.name}
+                    </Link>
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <Link href={`/profile/${post.author.username}`} className="text-purple-600 dark:text-purple-300">@{post.author.username}</Link>
+                      <span>•</span>
+                      <span>{formatDistanceToNow(new Date(post.createdAt))} ago</span>
+                    </div>
                   </div>
+                  {/* Check if current user is the post author */}
+                  {dbUserId === post.author.id && (
+                    <DeleteAlertDialog isDeleting={isDeleting} onDelete={handleDeletePost} />
+                  )}
                 </div>
-                {/* Check if current user is the post author */}
-                {dbUserId === post.author.id && (
-                  <DeleteAlertDialog isDeleting={isDeleting} onDelete={handleDeletePost} />
-                )}
+                <p className="mt-2 text-sm text-foreground break-words">{post.content}</p>
               </div>
-              <p className="mt-2 text-sm text-foreground break-words">{post.content}</p>
             </div>
-          </div>
 
-          {/* POST IMAGE */}
-          {post.image && (
-            <div className="rounded-lg overflow-hidden max-h-[600px]">
-              <img 
-                src={post.image} 
-                alt="Post content" 
-                className="w-full h-auto object-contain max-h-[600px]" 
-              />
-            </div>
-          )}
+            {/* POST IMAGE */}
+            {post.image && (
+              <div className="relative rounded-lg overflow-hidden max-w-[600px] mx-auto">
+                <img 
+                  src={post.image} 
+                  alt="Post content" 
+                  className="w-full h-auto object-contain" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              </div>
+            )}
 
-          {/* POST VIDEO */}
-          {post.video && (
-            <div 
-              ref={videoContainerRef}
-              className="relative rounded-lg overflow-hidden max-h-[600px] bg-black"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              onClick={handlePlayPause}
-            >
-              <video
-                ref={videoRef}
-                data-post-id={post.id}
-                src={post.video}
-                className="w-full h-full object-contain"
-                loop
-                playsInline
-                onEnded={handleVideoEnd}
-                muted={isMuted}
-              />
-              
-              {/* Video Controls Overlay */}
-              <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${(isHovered || !isPlaying) ? 'opacity-100' : 'opacity-0'}`}>
-                <div className="absolute inset-0 bg-black/30" />
+            {/* POST VIDEO */}
+            {post.video && (
+              <div 
+                ref={videoContainerRef}
+                className="relative rounded-lg overflow-hidden max-w-[600px] mx-auto bg-black"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                onClick={handlePlayPause}
+              >
+                <video
+                  ref={videoRef}
+                  data-post-id={post.id}
+                  src={post.video}
+                  className="w-full h-auto object-contain"
+                  loop
+                  playsInline
+                  onEnded={handleVideoEnd}
+                  muted={isMuted}
+                />
                 
-                {/* Play/Pause Button */}
-                <div className="relative z-10">
-                  <button 
-                    className="p-3 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePlayPause();
-                    }}
+                {/* Video Controls Overlay */}
+                <div className={`absolute inset-0 flex items-center justify-center ${(isHovered || !isPlaying) ? 'opacity-100' : 'opacity-0'}`}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                  
+                  {/* Play/Pause Button */}
+                  <div className="relative z-10">
+                    <button 
+                      className="p-3 rounded-full bg-black/50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlayPause();
+                      }}
+                    >
+                      {isPlaying ? (
+                        <PauseIcon className="w-8 h-8 text-white" />
+                      ) : (
+                        <PlayIcon className="w-8 h-8 text-white" />
+                      )}
+                    </button>
+                  </div>
+                  
+                  {/* Mute Button */}
+                  <button
+                    className="absolute bottom-4 right-4 p-2 rounded-full bg-black/50"
+                    onClick={handleMuteToggle}
                   >
-                    {isPlaying ? (
-                      <PauseIcon className="w-8 h-8 text-white" />
+                    {isMuted ? (
+                      <VolumeXIcon className="w-5 h-5 text-white" />
                     ) : (
-                      <PlayIcon className="w-8 h-8 text-white" />
+                      <Volume2Icon className="w-5 h-5 text-white" />
                     )}
                   </button>
                 </div>
-                
-                {/* Mute Button */}
-                <button
-                  className="absolute bottom-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-                  onClick={handleMuteToggle}
-                >
-                  {isMuted ? (
-                    <VolumeXIcon className="w-5 h-5 text-white" />
-                  ) : (
-                    <Volume2Icon className="w-5 h-5 text-white" />
+              </div>
+            )}
+
+            {/* LIKE & COMMENT BUTTONS */}
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "size-8 sm:size-9",
+                    hasLiked 
+                      ? "hover:bg-transparent" 
+                      : "hover:bg-transparent"
                   )}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* LIKE & COMMENT BUTTONS */}
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8 sm:size-9"
-                onClick={handleLike}
-                disabled={isLiking}
-              >
-                <HeartIcon
-                  className={`size-4 sm:size-5 ${
-                    hasLiked ? "fill-red-500 text-red-500" : ""
-                  }`}
-                />
-              </Button>
-              <span className="text-sm text-muted-foreground">{optimisticLikes}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8 sm:size-9"
-                onClick={handleCommentClick}
-              >
-                <MessageCircleIcon className="size-4 sm:size-5" />
-              </Button>
-              <span className="text-sm text-muted-foreground">{optimisticCommentCount}</span>
-            </div>
-          </div>
-
-          {/* COMMENTS SECTION */}
-          {showComments && (
-            <div className="space-y-4 pt-4">
-              {user ? (
-                <div className="flex space-x-2">
-                  <Textarea
-                    placeholder="Add a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="flex-1 min-h-[80px]"
+                  onClick={handleLike}
+                  disabled={isLiking}
+                >
+                  <HeartIcon
+                    className={cn(
+                      "size-4 sm:size-5",
+                      hasLiked 
+                        ? "fill-red-500 text-red-500" 
+                        : "text-red-400 dark:text-red-500"
+                    )}
                   />
-                  <Button
-                    size="icon"
-                    className="self-end"
-                    onClick={handleAddComment}
-                    disabled={isCommenting || !newComment.trim()}
-                  >
-                    <SendIcon className="size-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center py-4">
-                  <SignInButton mode="modal">
-                    <Button variant="outline" className="gap-2">
-                      <LogInIcon className="size-4" />
-                      Sign in to comment
-                    </Button>
-                  </SignInButton>
-                </div>
-              )}
-              <div className="space-y-4">
-                {optimisticComments.map((comment) => (
-                  <div key={comment.id} className="flex space-x-2">
-                    <Avatar className="size-8">
-                      <AvatarImage src={comment.author.image ?? "/avatar.png"} />
-                    </Avatar>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Link
-                            href={`/profile/${comment.author.username}`}
-                            className="font-medium"
-                          >
-                            {comment.author.name}
-                          </Link>
-                          <span className="text-sm text-muted-foreground">
-                            {formatCommentDate(comment.createdAt)}
-                          </span>
-                        </div>
-                        {/* Show delete button if user is comment author or post author */}
-                        {(dbUserId === comment.author.id || dbUserId === post.author.id) && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-6 hover:text-red-500"
-                            onClick={() => handleDeleteComment(comment.id)}
-                            disabled={isDeletingComment === comment.id}
-                          >
-                            {isDeletingComment === comment.id ? (
-                              <Loader2Icon className="size-4 animate-spin" />
-                            ) : (
-                              <Trash2Icon className="size-4" />
-                            )}
-                          </Button>
-                        )}
-                      </div>
-                      <p className="text-sm">{comment.content}</p>
-                    </div>
-                  </div>
-                ))}
+                </Button>
+                <span className="text-sm text-red-500 dark:text-red-400">{optimisticLikes}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 sm:size-9 hover:bg-transparent"
+                  onClick={handleCommentClick}
+                >
+                  <MessageCircleIcon className="size-4 sm:size-5 text-blue-500 dark:text-blue-400" />
+                </Button>
+                <span className="text-sm text-blue-500 dark:text-blue-400">{optimisticCommentCount}</span>
               </div>
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+
+            {/* COMMENTS SECTION */}
+            <AnimatePresence>
+              {showComments && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4 pt-4"
+                >
+                  {user ? (
+                    <div className="flex space-x-2">
+                      <Textarea
+                        placeholder="Add a comment..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="flex-1 min-h-[80px] bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                      />
+                      <Button
+                        size="icon"
+                        className="self-end bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                        onClick={handleAddComment}
+                        disabled={isCommenting || !newComment.trim()}
+                      >
+                        <SendIcon className="size-4 text-white" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center py-4">
+                      <SignInButton mode="modal">
+                        <Button variant="outline" className="gap-2 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                          <LogInIcon className="size-4 text-blue-500 dark:text-blue-400" />
+                          Sign in to comment
+                        </Button>
+                      </SignInButton>
+                    </div>
+                  )}
+                  <div className="space-y-4">
+                    {optimisticComments.map((comment, index) => (
+                      <motion.div
+                        key={comment.id}
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex space-x-2"
+                      >
+                        <Avatar className="size-8 ring-2 ring-primary/20 dark:ring-primary/40">
+                          <AvatarImage src={comment.author.image ?? "/avatar.png"} />
+                        </Avatar>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <Link
+                                href={`/profile/${comment.author.username}`}
+                                className="font-medium text-purple-600 dark:text-purple-300"
+                              >
+                                {comment.author.name}
+                              </Link>
+                              <span className="text-sm text-muted-foreground">
+                                {formatCommentDate(comment.createdAt)}
+                              </span>
+                            </div>
+                            {/* Show delete button if user is comment author or post author */}
+                            {(dbUserId === comment.author.id || dbUserId === post.author.id) && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-6 text-red-500 dark:text-red-400"
+                                onClick={() => handleDeleteComment(comment.id)}
+                                disabled={isDeletingComment === comment.id}
+                              >
+                                {isDeletingComment === comment.id ? (
+                                  <Loader2Icon className="size-4 animate-spin" />
+                                ) : (
+                                  <Trash2Icon className="size-4" />
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                          <p className="text-sm">{comment.content}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
 export default PostCard;

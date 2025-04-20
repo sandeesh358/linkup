@@ -13,11 +13,10 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * - sign-in and sign-up routes
      */
-    "/((?!_next/static|_next/image|favicon.ico|public).*)",
+    "/((?!_next/static|_next/image|favicon.ico|public|sign-in|sign-up).*)",
     "/api/(.*)",
     "/chat/(.*)",
-    "/message",
-    "/"
   ],
 };
